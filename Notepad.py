@@ -11,6 +11,9 @@ files = []
 indexes = []
 buttons = []
 
+# Colors
+fgColor = "#282828"
+bgColor = "white"
 
 # Window Settings
 root = tk.Tk()
@@ -26,12 +29,12 @@ textFont = tk_font(family='Microsoft Sans Serif', size=14)
 
 # Canvases
 textCanvas = tk.Canvas(root)
-textCanvas['bg'] = 'white'
+textCanvas['bg'] = bgColor
 textCanvas['highlightthickness'] = "0"
 textCanvas.place(relx=0, rely=0.05, relwidth=1, relheight=1)
 
 buttonCanvas = tk.Canvas(root)
-buttonCanvas['bg'] = "white"
+buttonCanvas['bg'] = bgColor
 buttonCanvas['highlightthickness'] = "0"
 buttonCanvas.place(relx=0, rely=0, relwidth=1, relheight=0.05)
 
@@ -42,9 +45,9 @@ buttonCanvas.place(relx=0, rely=0, relwidth=1, relheight=0.05)
 class FileButton(tk.Button):
     def __init__(self, index):
         super().__init__(buttonCanvas)
-        self['bg'] = 'white'
+        self['bg'] = bgColor
         self['text'] = os.path.basename(files[index].name)
-        self['fg'] = 'gray'
+        self['fg'] = fgColor
         self['border'] = '0'
         self["font"] = buttonFont
         self['command'] = lambda: displayText(index, indexes)
@@ -58,11 +61,11 @@ class TextField(tk.Text):
         super().__init__(textCanvas)
         # Settings
         self['border'] = '0'
-        self['fg'] = '#282828'
+        self['fg'] = fgColor
         self['font'] = textFont
         self['wrap'] = tk.WORD
-        self['insertbackground'] = "gray"
-        self['selectbackground'] = "gray"
+        self['insertbackground'] = fgColor
+        self['selectbackground'] = fgColor
         self['selectborderwidth'] = "20px"
         self['state'] = 'normal'
         self['padx'] = '80'
@@ -139,10 +142,10 @@ def saveNewFile():
 
 def closeFile(closing, index):
 
-    if buttons[index]["bg"] == "gray":
+    if buttons[index]["bg"] == fgColor:
         pass
 
-    if buttons[index]["bg"] == "white" or closing:
+    if buttons[index]["bg"] == bgColor or closing:
 
         for file, button in zip(files, buttons):
             if files.index(file) == index:
@@ -201,13 +204,13 @@ def displayText(index, indexes):
 
     for otherButton in buttons:
         if otherButton != None:
-            otherButton['bg'] = "white"
-            otherButton['fg'] = "gray"
+            otherButton['bg'] = bgColor
+            otherButton['fg'] = fgColor
         else:
             pass
     if buttons[index] != None:
-        buttons[index]['bg'] = "gray"
-        buttons[index]['fg'] = "white"
+        buttons[index]['bg'] = fgColor
+        buttons[index]['fg'] = bgColor
     else:
         pass
 
@@ -327,9 +330,9 @@ def rightFile(event):
 textField = TextField()
 
 plusButton = tk.Button(buttonCanvas)
-plusButton['bg'] = 'white'
+plusButton['bg'] = bgColor
 plusButton['text'] = '+'
-plusButton['fg'] = '#464646'
+plusButton['fg'] = fgColor
 plusButton['border'] = '0'
 plusButton["font"] = tk_font(family='MS Reference Sans Serif', size=20)
 plusButton['command'] = createNewFile
@@ -337,9 +340,9 @@ plusButton.pack(side=tk.LEFT, fill=tk.Y)
 plusButton.config(width=3)
 
 openButton = tk.Button(buttonCanvas)
-openButton['bg'] = 'white'
+openButton['bg'] = bgColor
 openButton['text'] = 'open'
-openButton['fg'] = '#464646'
+openButton['fg'] = fgColor
 openButton['border'] = '0'
 openButton["font"] = tk_font(family='MS Reference Sans Serif', size=15)
 openButton['command'] = openFile
@@ -348,9 +351,9 @@ openButton.config(width=len(openButton['text']))
 
 
 saveButton = tk.Button(buttonCanvas)
-saveButton['bg'] = 'white'
+saveButton['bg'] = bgColor
 saveButton['text'] = 'save'
-saveButton['fg'] = '#464646'
+saveButton['fg'] = fgColor
 saveButton['border'] = '0'
 saveButton["font"] = tk_font(family='MS Reference Sans Serif', size=15)
 saveButton['command'] = saveManual
