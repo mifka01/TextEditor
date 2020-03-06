@@ -3,6 +3,7 @@ import tkinter.scrolledtext as ScrolledText
 from tkinter.font import Font as tk_font
 from tkinter import filedialog
 import os
+import numpy as np
 
 
 # Variables
@@ -291,22 +292,31 @@ def ctrlQ(event):
 
 
 def leftFile(event):
-
     currentButton = indexes[len(indexes)-1]
+    workingButtons = [i for i,x in enumerate(buttons) if x !=None]
+    nextButtonIndex = workingButtons.index(currentButton)-1
 
-    buttons.reverse()
 
-    if buttons.index(buttons[currentButton])-1 >= 0:
-        displayText(buttons.index(buttons[currentButton])-1, indexes)
+    if nextButtonIndex >= 0:
+        displayText(workingButtons[nextButtonIndex],indexes)
+    
+    
 
 
 def rightFile(event):
     currentButton = indexes[len(indexes)-1]
+    workingButtons = [i for i,x in enumerate(buttons) if x !=None]
+    nextButtonIndex = workingButtons.index(currentButton)+1
 
-    buttons.reverse()
 
-    if buttons.index(buttons[currentButton])+1 >= 0:
-        displayText(buttons.index(buttons[currentButton])+1, indexes)
+    if nextButtonIndex <= len(workingButtons)-1:
+        displayText(workingButtons[nextButtonIndex],indexes)
+   
+
+  
+   
+            
+            
 
 
 # Static parts
