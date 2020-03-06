@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.scrolledtext as ScrolledText
-import tkinter.font as font
+from tkinter.font import Font as tk_font
 from tkinter import filedialog
 import os
 
@@ -19,9 +19,9 @@ root.iconbitmap('icons/Notepad.ico')
 
 
 # Fonts
-buttonFont = font.Font(family='Microsoft Sans Serif', size=10)
-titleFont = font.Font(family='Georgia', size=30, weight="bold")
-textFont = font.Font(family='Microsoft Sans Serif', size=14)
+buttonFont = tk_font(family='Microsoft Sans Serif', size=10)
+titleFont = tk_font(family='Georgia', size=30, weight="bold")
+textFont = tk_font(family='Microsoft Sans Serif', size=14)
 
 # Canvases
 textCanvas = tk.Canvas(root)
@@ -76,7 +76,7 @@ class TextField(tk.Text):
 
 
 def openFile():
-    file = tk.filedialog.askopenfile(parent=root, mode='rb')
+    file = tk.filedialog.askopenfile(parent=root, mode='r+')
     entry = True
     for x in files:
         if x != None:
@@ -119,24 +119,21 @@ def saveManual():
 
 def saveNewFile():
     f = tk.filedialog.asksaveasfile(
-        mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)   
-    file = open(f.name,"r+",encoding="utf-8")
+        mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)
+    file = open(f.name, "r+", encoding="utf-8")
     if file != None:
 
         oldIndex = indexes[len(indexes)-1]
 
-        os.remove(f"{files[oldIndex].name}")
-        hideButton()
-
-        files.remove(files[oldIndex])
-        files.insert(oldIndex, file)
-
-        buttons.remove(buttons[files.index(file)])
-        buttons.insert(files.index(file), FileButton(files.index(file)))
-
+        os.remove(files[oldIndex].name)
+        buttons[oldIndex].pack_forget()
+        files[oldIndex] = None
+        buttons[oldIndex] = None
+        files.append(file)
+        buttons.append(FileButton(files.index(file)))
         file.write(textField.get('1.0', tk.END).strip())
-        displayText(files.index(file), indexes)
         file.close()
+        displayText(files.index(file), indexes)
 
 
 def closeFile(closing, index):
@@ -150,11 +147,12 @@ def closeFile(closing, index):
             if files.index(file) == index:
 
                 if files[index].name[0:8] == "Untitled":
-                    file = open(files[index].name, "r+")
+                    file = open(files[index].name, "r+",encoding="utf-8")
                     if file.read().strip() != "":
                         displayText(index, indexes)
-                        file = tk.filedialog.asksaveasfile(
+                        f = tk.filedialog.asksaveasfile(
                             mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
+                        file = open(f.name,"r+",encoding="utf-8")
                         if file != None:
                             file.write(textField.get('1.0', tk.END).strip())
                             file.close()
@@ -164,11 +162,7 @@ def closeFile(closing, index):
                             buttons[index] = None
                             displayText(indexes[len(indexes)-2], indexes)
                         if closing:
-                            
-                            os.remove(files[index].name)
-                            buttons[index].pack_forget()
-                            files[index] = None
-                            buttons[index] = None
+
                             displayText(indexes[len(indexes)-2], indexes)
                     else:
                         file.close()
@@ -181,7 +175,8 @@ def closeFile(closing, index):
                     buttons[index].pack_forget()
                     files[index] = None
                     buttons[index] = None
-                    displayText(indexes[len(indexes)-2], indexes)
+                    print(indexes)
+                    displayText(indexes[len(indexes)-1], indexes)
 
 
 def autoSave():
@@ -216,8 +211,10 @@ def displayText(index, indexes):
 
     textField.delete('1.0', tk.END)
     if files[index] != None:
-        f = open(f'{files[index].name}', encoding='utf-8')
+
+        f = open(f'{files[index].name}', "r+", encoding="utf-8")
         text = f.read()
+
         textField.insert('1.0', text)
         f.close()
     else:
@@ -321,7 +318,7 @@ plusButton['bg'] = 'white'
 plusButton['text'] = '+'
 plusButton['fg'] = '#464646'
 plusButton['border'] = '0'
-plusButton["font"] = font.Font(family='MS Reference Sans Serif', size=20)
+plusButton["font"] = tk_font(family='MS Reference Sans Serif', size=20)
 plusButton['command'] = createNewFile
 plusButton.pack(side=tk.LEFT, fill=tk.Y)
 plusButton.config(width=3)
@@ -331,7 +328,7 @@ openButton['bg'] = 'white'
 openButton['text'] = 'open'
 openButton['fg'] = '#464646'
 openButton['border'] = '0'
-openButton["font"] = font.Font(family='MS Reference Sans Serif', size=15)
+openButton["font"] = tk_font(family='MS Reference Sans Serif', size=15)
 openButton['command'] = openFile
 openButton.pack(side=tk.RIGHT, fill=tk.Y)
 openButton.config(width=len(openButton['text']))
@@ -342,7 +339,7 @@ saveButton['bg'] = 'white'
 saveButton['text'] = 'save'
 saveButton['fg'] = '#464646'
 saveButton['border'] = '0'
-saveButton["font"] = font.Font(family='MS Reference Sans Serif', size=15)
+saveButton["font"] = tk_font(family='MS Reference Sans Serif', size=15)
 saveButton['command'] = saveManual
 saveButton.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
 saveButton.config(width=len(saveButton['text']))
