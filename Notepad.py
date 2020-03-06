@@ -15,7 +15,7 @@ buttons = []
 root = tk.Tk()
 root.title("Notepad^")
 root.geometry("900x700")
-root.iconbitmap('Notepad.ico')
+root.iconbitmap('icons/Notepad.ico')
 
 
 # Fonts
@@ -111,7 +111,7 @@ def saveManual():
             saveNewFile()
         else:
             f = open(f"{files[buttonIndex].name}", 'r+', encoding='utf-8')
-            f.write(textField.get("1.0", tk.END))
+            f.write(textField.get("1.0", tk.END).strip())
             f.close()
     else:
         pass
@@ -134,7 +134,7 @@ def saveNewFile():
         buttons.remove(buttons[files.index(file)])
         buttons.insert(files.index(file), FileButton(files.index(file)))
 
-        file.write(textField.get('1.0', tk.END))
+        file.write(textField.get('1.0', tk.END).strip())
         displayText(files.index(file), indexes)
         file.close()
 
@@ -150,24 +150,34 @@ def closeFile(closing, index):
             if files.index(file) == index:
 
                 if files[index].name[0:8] == "Untitled":
-                    displayText(index, indexes)
-                    file = tk.filedialog.asksaveasfile(
-                        mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
-                    if file != None:
-                        file.write(textField.get('1.0', tk.END))
+                    file = open(files[index].name, "r+")
+                    if file.read().strip() != "":
+                        displayText(index, indexes)
+                        file = tk.filedialog.asksaveasfile(
+                            mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
+                        if file != None:
+                            file.write(textField.get('1.0', tk.END).strip())
+                            file.close()
+                            os.remove(files[index].name)
+                            buttons[index].pack_forget()
+                            files[index] = None
+                            buttons[index] = None
+                            displayText(indexes[len(indexes)-2], indexes)
+                        if closing:
+                            
+                            os.remove(files[index].name)
+                            buttons[index].pack_forget()
+                            files[index] = None
+                            buttons[index] = None
+                            displayText(indexes[len(indexes)-2], indexes)
+                    else:
                         file.close()
                         os.remove(files[index].name)
                         buttons[index].pack_forget()
                         files[index] = None
                         buttons[index] = None
-                        displayText(indexes[len(indexes)-2], indexes)
-                    if closing:
-                        os.remove(files[index].name)
-                        buttons[index].pack_forget()
-                        files[index] = None
-                        buttons[index] = None
-                        displayText(indexes[len(indexes)-2], indexes)
                 else:
+                    file.close()
                     buttons[index].pack_forget()
                     files[index] = None
                     buttons[index] = None
@@ -178,7 +188,7 @@ def autoSave():
     if files[indexes[len(indexes)-2]] != None:
         f = open(f"{files[indexes[len(indexes)-2]].name}",
                  'r+', encoding='utf-8')
-        f.write(textField.get("1.0", tk.END))
+        f.write(textField.get("1.0", tk.END).strip())
         f.close()
     else:
         pass
