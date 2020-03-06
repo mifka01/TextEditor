@@ -3,7 +3,7 @@ import tkinter.scrolledtext as ScrolledText
 import tkinter.font as font
 from tkinter import filedialog
 import os
-
+print("h")
 
 # Variables
 files = []
@@ -127,7 +127,7 @@ def saveNewFile():
 
         os.remove(f"{files[oldIndex].name}")
         hideButton()
-
+        
         files.remove(files[oldIndex])
         files.insert(oldIndex, file)
 
