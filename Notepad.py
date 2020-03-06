@@ -153,8 +153,9 @@ def closeFile(closing, index):
                         displayText(index, indexes)
                         f = tk.filedialog.asksaveasfile(
                             mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
-                        file = open(f.name,"r+",encoding="utf-8")
-                        if file != None:
+                        
+                        if f != None:
+                            file = open(f.name,"r+",encoding="utf-8")
                             file.write(textField.get('1.0', tk.END).strip())
                             file.close()
                             os.remove(files[index].name)
@@ -165,6 +166,8 @@ def closeFile(closing, index):
                         if closing:
 
                             displayText(indexes[len(indexes)-2], indexes)
+                        if f == None:
+                            break
                     else:
                         file.close()
                         os.remove(files[index].name)
