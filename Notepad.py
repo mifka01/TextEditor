@@ -3,8 +3,7 @@ import tkinter.scrolledtext as ScrolledText
 from tkinter.font import Font as tk_font
 from tkinter import filedialog
 import os
-import time
-import unicodedata
+
 
 # Variables
 files = []
@@ -119,11 +118,11 @@ def saveManual():
 
 
 def saveNewFile():
-    file = tk.filedialog.asksaveasfile(
+    f = tk.filedialog.asksaveasfile(
         mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)
-
+    file = open(f.name, "r+", encoding="utf-8")
     if file != None:
-        
+
         oldIndex = indexes[len(indexes)-1]
 
         os.remove(files[oldIndex].name)
@@ -132,7 +131,7 @@ def saveNewFile():
         buttons[oldIndex] = None
         files.append(file)
         buttons.append(FileButton(files.index(file)))
-        file.write(textField.get('1.0', tk.END).strip())      
+        file.write(textField.get('1.0', tk.END).strip())
         file.close()
         displayText(files.index(file), indexes)
 
@@ -148,11 +147,12 @@ def closeFile(closing, index):
             if files.index(file) == index:
 
                 if files[index].name[0:8] == "Untitled":
-                    file = open(files[index].name, "r+")
+                    file = open(files[index].name, "r+",encoding="utf-8")
                     if file.read().strip() != "":
                         displayText(index, indexes)
-                        file = tk.filedialog.asksaveasfile(
+                        f = tk.filedialog.asksaveasfile(
                             mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
+                        file = open(f.name,"r+",encoding="utf-8")
                         if file != None:
                             file.write(textField.get('1.0', tk.END).strip())
                             file.close()
@@ -162,7 +162,7 @@ def closeFile(closing, index):
                             buttons[index] = None
                             displayText(indexes[len(indexes)-2], indexes)
                         if closing:
-                                                      
+
                             displayText(indexes[len(indexes)-2], indexes)
                     else:
                         file.close()
@@ -190,7 +190,7 @@ def autoSave():
 
 
 def displayText(index, indexes):
-    
+
     indexes.append(index)
     indexes = [indexes[i] for i in range(len(indexes)) if (
         i == 0) or indexes[i] != indexes[i-1]]
@@ -211,10 +211,10 @@ def displayText(index, indexes):
 
     textField.delete('1.0', tk.END)
     if files[index] != None:
-        
-        f = open(f'{files[index].name}',"r+",encoding="utf-8")
+
+        f = open(f'{files[index].name}', "r+", encoding="utf-8")
         text = f.read()
-     
+
         textField.insert('1.0', text)
         f.close()
     else:
