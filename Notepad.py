@@ -118,9 +118,9 @@ def saveManual():
 
 
 def saveNewFile():
-    file = tk.filedialog.asksaveasfile(
-        mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)
-
+    f = tk.filedialog.asksaveasfile(
+        mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)   
+    file = open(f.name,"r+",encoding="utf-8")
     if file != None:
 
         oldIndex = indexes[len(indexes)-1]
