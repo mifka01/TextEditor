@@ -174,14 +174,14 @@ class TextEditor(tk.Frame):
         """
         button.pack_forget()
 
-    def save_file(self):
+    def save_file(self, permanent=True):
         """Saves the file the user is on.
 
         If the file has not been saved before,
         the function will be directed to save_new_file() instead.
         """
         if self.current_file is not None:
-            if self.current_file.name[0:8] == "Untitled":
+            if permanent and self.current_file.name[0:8] == "Untitled":
                 self.save_new_file()
             else:
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
@@ -313,7 +313,9 @@ class TextEditor(tk.Frame):
 
             # Saves the replaced text, if any
             if self.current_file is not None:
-                self.save_file()
+                # Changes to unsaved file are temporary
+                self.save_file(False)
+
             self.current_file = tab_file
             self.display_text(tab_file)
 
