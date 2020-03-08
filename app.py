@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-from tkinter.font import Font as tk_font
 import os
 from random import choice
 
@@ -24,7 +23,8 @@ class TextEditor(tk.Frame):
         self.master = master
         self.pack()
         self.create_widgets()
-        self.new_file()  # The blank file the user sees at start up
+
+        self.prompt_to_open_file()  # Tell user to open something
 
         # Configuring styles
         style = ttk.Style()
@@ -55,28 +55,11 @@ class TextEditor(tk.Frame):
         )
 
     def create_widgets(self):
-        # Initialize self.text_field
-        text_canvas = tk.Canvas(self.master)
-        text_canvas['bg'] = BACKGROUND_COLOR
-        text_canvas['highlightthickness'] = "0"
-        text_canvas.place(relx=0, rely=0.05, relwidth=1, relheight=1)
-
-        self.text_field = tk.Text(text_canvas)
-        self.text_field['border'] = '0'
-        self.text_field['fg'] = FOREGROUND_COLOR
-        self.text_field['font'] = TEXT_FONT
-        self.text_field['wrap'] = tk.WORD
-        self.text_field['insertbackground'] = FOREGROUND_COLOR
-        self.text_field['selectbackground'] = FOREGROUND_COLOR
-        self.text_field['selectborderwidth'] = "20px"
-        self.text_field['state'] = 'normal'
-        self.text_field['padx'] = '80'
-        # self.text_field.bind("<Control-e>", title)
-        # self.text_field.bind("<Control-r>", color)
-        # self.text_field.bind("<Control-v>", paste)
-        # self.text_field.bind("<Control-d>", textReset)
-
-        self.text_field.pack(fill=tk.X)
+        self.text_canvas = tk.Canvas(self.master)
+        self.text_canvas['bg'] = BACKGROUND_COLOR
+        self.text_canvas['highlightthickness'] = "0"
+        self.text_canvas.place(relx=0, rely=0.05, relwidth=1, relheight=1)
+        self.initialize_text_field()
 
         # Initialize plus_button
         self.plus_button = ttk.Button(
@@ -107,6 +90,33 @@ class TextEditor(tk.Frame):
         )
         save_button.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
         save_button.config(width=len(save_button['text']))
+
+    def initialize_text_field(self):
+        """Initialize the text field."""
+        self.text_field = tk.Text(self.text_canvas)
+        self.text_field['border'] = '0'
+        self.text_field['fg'] = FOREGROUND_COLOR
+        self.text_field['font'] = TEXT_FONT
+        self.text_field['wrap'] = tk.WORD
+        self.text_field['insertbackground'] = FOREGROUND_COLOR
+        self.text_field['selectbackground'] = FOREGROUND_COLOR
+        self.text_field['selectborderwidth'] = "20px"
+        self.text_field['state'] = 'normal'
+        self.text_field['padx'] = '80'
+        # self.text_field.bind("<Control-e>", title)
+        # self.text_field.bind("<Control-r>", color)
+        # self.text_field.bind("<Control-v>", paste)
+        # self.text_field.bind("<Control-d>", textReset)
+
+        self.text_field.pack(fill=tk.X)
+
+    def prompt_to_open_file(self):
+        """Prompt the user to open a file.
+
+        This function removes the text field completely.
+        """
+        self.text_field.delete("1.0", tk.END)
+        self.text_field.pack_forget()
 
     def open_file(self):
         """Allows user to open a file.
@@ -217,6 +227,7 @@ class TextEditor(tk.Frame):
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
             self.save_file()
+            self.text_field.delete('1.0', tk.END)
 
             # Remove file from the app
             file_reference_to_close["tab"].pack_forget()
@@ -227,7 +238,7 @@ class TextEditor(tk.Frame):
                 random_file_reference = choice(self.files_in_tab)
                 self.switch_tabs(random_file_reference["file"])
             else:
-                self.text_field.delete('1.0', tk.END)
+                self.prompt_to_open_file()
         else:
             file_to_close = file_reference_to_close["file"]
             original_file_tab = self.current_file
@@ -266,6 +277,8 @@ class TextEditor(tk.Frame):
                 )
 
     def switch_tabs(self, tab_file):
+        self.text_field.pack()  # User needs to type
+
         if tab_file == self.current_file:
             pass
         else:
