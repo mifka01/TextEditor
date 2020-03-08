@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from ttkthemes import ThemedStyle
 import os
 from random import choice
 from platform import system as platform
@@ -18,6 +19,7 @@ TEXT_FONT = ('Microsoft Sans Serif', 14)
 class TextEditor(tk.Frame):
     files_in_tab = []
     current_file = None
+    files_count = 0
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -28,7 +30,8 @@ class TextEditor(tk.Frame):
         self.prompt_to_open_file()  # Tell user to open something
 
         # Configuring styles
-        style = ttk.Style()
+        style = ThemedStyle(master)
+        style.set_theme_advanced("elegance")
 
         style.configure(
             'TButton',
@@ -80,7 +83,7 @@ class TextEditor(tk.Frame):
             style="Open.TButton",
             text="open",
             command=self.open_file
-            )
+        )
         open_button.pack(side=tk.RIGHT, fill=tk.Y)
         open_button.config(width=len(open_button['text']))
 
@@ -154,8 +157,9 @@ class TextEditor(tk.Frame):
 
         It is saved in the TextEditor file directory as of now.
         """
+
         with open(
-            "Untitled-" + str(len(self.files_in_tab)) + ".txt",
+            "Untitled-" + str(self.files_count) + ".txt",
             "w+",
             encoding='utf-8'
         ) as raw_file:
@@ -164,7 +168,9 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, raw_file)
             }
             self.files_in_tab.append(file_reference)
+     
             self.switch_tabs(raw_file)  # Open the nenwly created file
+        self.files_count += 1
 
     def hideButton(self, button):
         """Hides the the tab button to access a particular file.
@@ -184,11 +190,13 @@ class TextEditor(tk.Frame):
         """
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
-                self.save_new_file()
+                return self.save_new_file()
             else:
+              
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
                     current_text = self.text_field.get("1.0", tk.END).strip()
                     f.write(current_text)
+                f.close()
 
     def save_new_file(self):
         """Lets the user save a newly created file.
@@ -206,6 +214,7 @@ class TextEditor(tk.Frame):
         # If the user did not click cancel
         if file_to_save is not None:
             with open(file_to_save.name, "r+", encoding="utf-8") as f:
+
                 os.remove(self.current_file.name)
                 for index, file_reference in enumerate(self.files_in_tab):
                     if file_reference["file"].name == self.current_file.name:
@@ -221,6 +230,7 @@ class TextEditor(tk.Frame):
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
+                f.close()
 
                 return(new_file_reference)
         else:
@@ -240,25 +250,35 @@ class TextEditor(tk.Frame):
         # If the user is closing the current tab
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
-            file_reference = self.save_file()
-            self.text_field.delete('1.0', tk.END)
+            with open(self.current_file.name, "r+", encoding="utf-8") as f:
+                if f.read().strip() != "":
+                    f.close()     
+                    file_reference = self.save_file()
+                    self.text_field.delete('1.0', tk.END)
 
-            self.remove_file_from_app(file_reference)
+                    self.remove_file_from_app(file_reference)
+                else:
+                    f.close()
+                    os.remove(file_reference['file'].name)
+                    self.remove_file_from_app(file_reference)
 
             if self.files_in_tab != []:
                 # Open a random file
                 random_file_reference = choice(self.files_in_tab)
+               
                 self.switch_tabs(random_file_reference["file"])
             else:
                 self.prompt_to_open_file()
         else:
             file_to_close = file_reference_to_close["file"]
+
             original_file_tab = self.current_file
 
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
                     if f.read().strip() != "":  # If there is text
                         # Go to that file and ask if the user wants to save
+                        f.close()
                         self.switch_tabs(f)
                         new_file = self.save_new_file()
 
@@ -270,8 +290,10 @@ class TextEditor(tk.Frame):
                         # Go back to the original file once that is closed
                         self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
+                        f.close()
                         os.remove(file_to_close.name)
                         self.remove_file_from_app(file_reference_to_close)
+
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
                 self.remove_file_from_app(file_reference_to_close)
@@ -285,7 +307,9 @@ class TextEditor(tk.Frame):
         The FileButton tk.Button object disappears from the tab bar,
         and the dict is removed from the self.files_in_tab variable.
         """
+
         file_reference["tab"].pack_forget()
+
         self.files_in_tab.remove(file_reference)
 
     def focus_tabs(self, focused_raw_file):
@@ -315,7 +339,11 @@ class TextEditor(tk.Frame):
             self.focus_tabs(tab_file)
 
             # Saves the replaced text, if any
-            if self.current_file is not None:
+            entry = True
+            for file_reference in self.files_in_tab:
+                if file_reference != self.current_file:
+                    entry = False
+            if self.current_file is not None and entry:
                 # Changes to unsaved file are temporary
                 self.save_file(False)
 
@@ -335,6 +363,7 @@ class TextEditor(tk.Frame):
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
         self.text_field.insert('1.0', text)
+        f.close()
 
     def ctrlS(self, event):
         self.save_file()
@@ -346,10 +375,14 @@ class TextEditor(tk.Frame):
         self.new_file()
 
     def ctrlQ(self, event):
-        for file_reference in self.files_in_tab:
-            if file_reference["file"].name[0:8] == "Untitled":
-                self.close_file(file_reference["file"])
+        original_files_len = len(self.files_in_tab)
+        index = 0
 
+        while index < original_files_len:
+            if self.files_in_tab[0]["file"].name[0:8] == "Untitled":     
+                self.close_file(self.files_in_tab[0]['file']) 
+            index += 1
+             
         root.quit()
 
     def left_file(self, event):
