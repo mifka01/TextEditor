@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 import os
 
 
@@ -9,23 +9,17 @@ BACKGROUND_COLOR = "white"
 
 class TextEditor(tk.Frame):
     files_in_tab = []
-    indexes = []
-    buttons = []
+    current_file = None
 
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
         self.pack()
         self.create_widgets()
-        self.new_file()
+        self.new_file()  # The blank file the user sees at start up
 
-        # Defining white bg and black fg style for ttk
+        # Configuring styles
         style = ttk.Style()
-        style.configure(
-            "BW.TLabel",
-            foreground="black",
-            background="white"
-        )
 
         style.configure(
             'TButton',
@@ -54,7 +48,7 @@ class TextEditor(tk.Frame):
         )
 
     def create_widgets(self):
-        # Initialize text_canvas
+        # Initialize self.text_field
         text_canvas = tk.Canvas(self.master)
         text_canvas['bg'] = BACKGROUND_COLOR
         text_canvas['highlightthickness'] = "0"
@@ -102,210 +96,211 @@ class TextEditor(tk.Frame):
             self,
             style="TButton",
             text='save',
-            command=self.saveManual
+            # command=self.saveManual
         )
         save_button.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
         save_button.config(width=len(save_button['text']))
 
     def openFile(self):
-        file_to_open = tk.filedialog.askopenfile(
+        """Allows user to open a file.
+
+        If the the file is already in the tab,
+        the file will not be opened again.
+        """
+        file_to_open = filedialog.askopenfile(
             parent=self.master,
             mode='r+'
         )
         entry = True
-        for file_in_tab in self.files_in_tab:
-            if file_in_tab is not None:
-                if file_in_tab.name == file_to_open.name:
-                    entry = False
+        for file_reference in self.files_in_tab:
+            if file_reference["file"].name == file_to_open.name:
+                entry = False
             else:
                 pass
 
         if file_to_open is not None and entry:
-            self.files_in_tab.append(file_to_open)
-            self.buttons.append(
-                FileButton(self.files_in_tab.index(file_to_open))
-            )
-            self.displayText(
-                self.files_in_tab.index(file_to_open), self.self.indexes
-            )
-            file_to_open.close()
+            file_reference = {
+                "file": file_to_open,
+                "tab": FileButton(self, file_to_open)
+            }
+            self.files_in_tab.append(file_reference)
+            self.display_text(file_to_open)
 
-        print(file_to_open.name)
+        file_to_open.close()
 
     def new_file(self):
-        f = open(
+        raw_file = open(
             "Untitled-" + str(len(self.files_in_tab)) + ".txt",
             "w+",
             encoding='utf-8'
         )
-        self.files_in_tab.append(f)
-        self.buttons.append(FileButton(self, self.files_in_tab.index(f)))
-        self.displayText(self.files_in_tab.index(f), self.indexes)
-        f.close()
+        file_reference = {"file": raw_file, "tab": FileButton(self, raw_file)}
+        self.files_in_tab.append(file_reference)
+        self.display_text(raw_file)
+        raw_file.close()
 
-    def hideButton(self):
-        self.buttons[self.indexes[len(self.indexes)-1]].pack_forget()
+    def hideButton(self, button):
+        """Hides the the tab button to access a particular file.
 
-    def saveManual(self):
-        buttonIndex = self.indexes[len(self.indexes)-1]
-        if self.files_in_tab[buttonIndex] is not None:
-            if self.files_in_tab[buttonIndex].name[0:8] == "Untitled":
-                self.saveNewFile()
-            else:
-                f = open(
-                    f"{self.files_in_tab[buttonIndex].name}",
-                    'r+',
-                    encoding='utf-8'
-                )
-                f.write(self.text_field.get("1.0", tk.END).strip())
-                f.close()
-        else:
-            pass
+        Key arguments:
+        button -- FileButton
+        """
+        button.pack_forget()
+
+    # def saveManual(self):
+    #     buttonIndex = self.indexes[len(self.indexes)-1]
+    #     if self.files_in_tab[buttonIndex] is not None:
+    #         if self.files_in_tab[buttonIndex].name[0:8] == "Untitled":
+    #             self.saveNewFile()
+    #         else:
+    #             f = open(
+    #                 f"{self.files_in_tab[buttonIndex].name}",
+    #                 'r+',
+    #                 encoding='utf-8'
+    #             )
+    #             f.write(self.text_field.get("1.0", tk.END).strip())
+    #             f.close()
 
     def saveNewFile(self):
-        f = tk.filedialog.asksaveasfile(
+        """Lets user save an unsaved file.
+
+        This function deletes everything it knows about the unsaved file in
+        the system and transfers the information into a new file, with a
+        new name, but with the same content in terms of text.
+        The new file is then re-added into the system.
+        """
+        file_to_save = filedialog.asksaveasfile(
             mode='w',
             defaultextension=".txt",
-            initialfile="s_" + self.files_in_tab[
-                self.indexes[len(self.indexes) - 1]
-            ].name
+            initialfile="s_" + self.current_file.name
         )
-        file = open(f.name, "r+", encoding="utf-8")
-        if file is not None:
-            oldIndex = self.indexes[len(self.indexes)-1]
+        if file_to_save is not None:
+            with open(file_to_save.name, "r+", encoding="utf-8") as f:
+                os.remove(self.current_file.name)
+                self.current_file = None  # Soon to be replaced by the new file
+                self.current_file.pack_forget()
+                for index, file_reference in enumerate(self.files_in_tab):
+                    if file_reference.name == self.current_file.name:
+                        self.files_in_tab.pop(index)
 
-            os.remove(self.files_in_tab[oldIndex].name)
-            self.buttons[oldIndex].pack_forget()
-            self.files_in_tab[oldIndex] = None
-            self.buttons[oldIndex] = None
-            self.files_in_tab.append(file)
-            self.buttons.append(FileButton(self.files_in_tab.index(file)))
-            file.write(self.text_field.get('1.0', tk.END).strip())
-            file.close()
-            self.displayText(self.files_in_tab.index(file), self.indexes)
+                new_file_reference = {"file": f, "tab": FileButton(self, f)}
+                self.files_in_tab.append(new_file_reference)
+                f.write(self.text_field.get('1.0', tk.END).strip())
+                self.display_text(f)
 
-    def closeFile(self, closing, index):
+    def closeFile(self, closing, raw_file):
 
         # If the user is closing the current tab
-        if self.current_file == self.files_in_tab[
-            self.buttons[index].main_index
-        ]:
+        if self.current_file == raw_file:
             pass
+        elif self.current_file != raw_file or closing:
+            file_reference_to_close = None  # To hold a dictionary
+            for file_reference in self.files_in_tab:
+                if file_reference["file"] == raw_file:
+                    file_reference_to_close = file_reference
 
-        if self.current_file != self.files_in_tab[
-            self.buttons[index].main_index
-        ] or closing:
-            for file, button in zip(self.files_in_tab, self.buttons):
-                if self.files_in_tab.index(file) == index:
+            file_to_close = file_reference_to_close["file"]
 
-                    if self.files_in_tab[index].name[0:8] == "Untitled":
-                        file = open(
-                            self.files_in_tab[index].name,
-                            "r+",
-                            encoding="utf-8"
+            if file_to_close.name[0:8] == "Untitled":  # If not saved
+                with open(file_to_close.name, "r+", encoding="utf-8") as f:
+                    if f.read().strip() != "":  # If there is text
+                        self.display_text(f)
+                        file_to_save = filedialog.asksaveasfile(
+                            mode='w',
+                            defaultextension=".txt",
+                            title=f.name,
+                            initialfile="s_"+f.name
                         )
-                        if file.read().strip() != "":  # If there is text
-                            self.displayText(index, self.indexes)
-                            f = tk.filedialog.asksaveasfile(
-                                mode='w',
-                                defaultextension=".txt",
-                                title=self.files_in_tab[index].name,
-                                initialfile="s_"+self.files_in_tab[index].name
-                            )
 
-                            if f is not None:
-                                file = open(f.name, "r+", encoding="utf-8")
-                                file.write(
+                        if file_to_save is not None:  # If user wants to save
+                            with open(
+                                file_to_save.name,
+                                "r+",
+                                encoding="utf-8"
+                            ) as save_f:
+                                save_f.write(
                                     self.text_field.get('1.0', tk.END).strip()
                                 )
-                                file.close()
-                                os.remove(self.files_in_tab[index].name)
-                                self.buttons[index].pack_forget()
-                                self.files_in_tab[index] = None
-                                self.buttons[index] = None
-                                self.displayText(
-                                    self.indexes[len(self.indexes)-2],
-                                    self.indexes
-                                )
-                            if closing:
-                                self.displayText(
-                                    self.indexes[len(self.indexes)-2],
-                                    self.indexes
-                                )
-                            if f is None:
-                                break
-                        else:
-                            file.close()
-                            os.remove(self.files_in_tab[index].name)
-                            self.buttons[index].pack_forget()
-                            self.files_in_tab[index] = None
-                            self.buttons[index] = None
-                    else:
-                        file.close()
-                        self.buttons[index].pack_forget()
-                        self.files_in_tab[index] = None
-                        self.buttons[index] = None
-                        print(self.indexes)
-                        self.displayText(
-                            self.indexes[len(self.indexes)-1], self.indexes
-                        )
+                            os.remove(file_to_close.name)
+                            file_reference_to_close["tab"].pack_forget()
+                            self.files_in_tab.remove(file_reference_to_close)
+                            self.display_text(self.current_file)
+                        elif file_to_save is None:
+                            pass
 
-    def autoSave(self):
+                        if closing:
+                            self.display_text(self.current_file)
+                    else:  # If the untitled file is empty
+                        os.remove(file_to_close.name)
+                        file_reference_to_close["tab"].pack_forget()
+                        self.files_in_tab.remove(file_reference_to_close)
+            else:  # If it is not called 'Untitled'
+                os.remove(file_reference_to_close.name)
+                file_reference_to_close["tab"].pack_forget()
+                self.files_in_tab.remove(file_reference_to_close)
 
-        if self.files_in_tab[self.indexes[len(self.indexes)-2]] is not None:
-            f = open(
-                f"{self.files_in_tab[self.indexes[len(self.indexes)-2]].name}",
-                'r+',
-                encoding='utf-8'
-            )
+    def internal_save(self, raw_file):
+        """Saves the user's current file.
+
+        Key arguments:
+        raw_file -- TextIOWrapper
+
+        The text is not saved to the .txt file directly,
+        but it is saved in the text editor.
+        Thus, when the user switches back to the this file tab,
+        the information is still there.
+        """
+        with open(
+            raw_file.name,
+            'r+',
+            encoding='utf-8'
+        ) as f:
             f.write(self.text_field.get("1.0", tk.END).strip())
             f.close()
-        else:
-            pass
 
-    def displayText(self, index, indexes):
+    def display_text(self, new_raw_file):
+        """Transfers text from a file into the text editor.
 
-        self.indexes.append(index)
-        # Recreates the list such that there are no repeating indexes
-        self.indexes = [indexes[i] for i in range(len(indexes)) if (
-                        i == 0) or indexes[i] != indexes[i-1]]
+        Key argument:
+        new_raw_file -- TextIOWrapper
+        """
+        # Reconfigure colors to show the current file in use
+        for file_reference in self.files_in_tab:
+            if (self.current_file is not None and
+                    file_reference["file"] == self.current_file):
+                file_reference["tab"].configure(
+                    style="File.TButton"
+                )
+            elif file_reference["file"] == new_raw_file:
+                file_reference["tab"].configure(
+                    style="Current.File.TButton"
+                )
 
-        for otherButton in self.buttons:
-            if otherButton is not None:
-                otherButton.configure(style="File.TButton")
-            else:
-                pass
-        if self.buttons[index] is not None:
-            self.buttons[index].configure(style="Current.File.TButton")
-        else:
-            pass
+        # Saves the replaced text, if any
+        if self.current_file is not None:
+            self.internal_save(self.current_file)
 
-        self.current_file = self.buttons[index]
+        self.current_file = new_raw_file
 
-        self.autoSave()
-
-        self.text_field.delete('1.0', tk.END)
-        if self.files_in_tab[index] is not None:
-            f = open(f'{self.files_in_tab[index].name}', "r+", encoding="utf-8")
+        self.text_field.delete('1.0', tk.END)  # Refresh the editor
+        # Replace the editor with the new file's text
+        with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
 
-            self.text_field.insert('1.0', text)
-            f.close()
-        else:
-            pass
+        self.text_field.insert('1.0', text)
 
 
 class FileButton(ttk.Button):
-    def __init__(self, app, index):
+    def __init__(self, app, raw_file):
+        displayed_name = os.path.basename(raw_file.name)
         super().__init__(
             app,
             style="File.TButton",
-            text=os.path.basename(app.files_in_tab[index].name),
-            command=lambda: self.displayText(index, self.indexes)
+            text=displayed_name,
+            command=lambda: app.display_text(raw_file)
         )
-        self.main_index = index
         self.pack(side=tk.LEFT, fill=tk.Y)
-        self.config(width=len(os.path.basename(app.files_in_tab[index].name)))
+        self.config(width=len(displayed_name))
         self.bind('<Button-3>', lambda event: self.closeFile(False, index))
 
 
