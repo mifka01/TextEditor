@@ -68,13 +68,13 @@ class TextField(tk.Text):
         self['selectbackground'] = fgColor
         self['selectborderwidth'] = "20px"
         self['state'] = 'normal'
-        self['padx'] = '80'
+        self['padx'] = '60'
+        self['pady'] = '20'
         self.bind("<Control-e>", title)
         self.bind("<Control-r>", color)
         self.bind("<Control-v>", paste)
         self.bind("<Control-d>", textReset)
-
-        self.pack(fill=tk.X)
+        self.pack(fill=tk.BOTH,expand=True)
 
 # Methods
 
