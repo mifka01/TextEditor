@@ -219,9 +219,10 @@ class TextEditor(tk.Frame):
                 f.write(self.text_field.get('1.0', tk.END).strip())
 
                 # Move from the old file to the new
+                self.current_file = None
                 self.switch_tabs(f)
 
-                return(f)
+                return(new_file_reference)
         else:
             return None
 
@@ -239,10 +240,10 @@ class TextEditor(tk.Frame):
         # If the user is closing the current tab
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
-            self.save_file()
+            file_reference = self.save_file()
             self.text_field.delete('1.0', tk.END)
 
-            self.remove_file_from_app(file_reference_to_close)
+            self.remove_file_from_app(file_reference)
 
             if self.files_in_tab != []:
                 # Open a random file
