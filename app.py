@@ -1,10 +1,17 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from tkinter.font import Font as tk_font
 import os
 
 
+# Colors
 FOREGROUND_COLOR = "#282828"
 BACKGROUND_COLOR = "white"
+
+# Fonts
+BUTTON_FONT = ('Microsoft Sans Serif', 10)
+# TITTLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
+TEXT_FONT = ('Microsoft Sans Serif', 14)
 
 
 class TextEditor(tk.Frame):
@@ -37,12 +44,11 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'File.TButton',
-            font=('MS Reference Sans Serif', 10)
+            font=BUTTON_FONT
         )
 
         style.configure(
             'Current.File.TButton',
-            font=('MS Reference Sans Serif', 10),
             background=FOREGROUND_COLOR,
             foreground=BACKGROUND_COLOR
         )
@@ -57,7 +63,7 @@ class TextEditor(tk.Frame):
         self.text_field = tk.Text(text_canvas)
         self.text_field['border'] = '0'
         self.text_field['fg'] = FOREGROUND_COLOR
-        # self.text_field['font'] = textFont
+        self.text_field['font'] = TEXT_FONT
         self.text_field['wrap'] = tk.WORD
         self.text_field['insertbackground'] = FOREGROUND_COLOR
         self.text_field['selectbackground'] = FOREGROUND_COLOR
@@ -124,7 +130,7 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, file_to_open)
             }
             self.files_in_tab.append(file_reference)
-            self.display_text(file_to_open)
+            self.switch_tabs(file_to_open)
 
     def new_file(self):
         """Allows user to create a new file.
@@ -141,7 +147,7 @@ class TextEditor(tk.Frame):
         )
         file_reference = {"file": raw_file, "tab": FileButton(self, raw_file)}
         self.files_in_tab.append(file_reference)
-        self.display_text(raw_file)
+        self.switch_tabs(raw_file)
         raw_file.close()
 
     def hideButton(self, button):
@@ -188,21 +194,19 @@ class TextEditor(tk.Frame):
                         file_reference["tab"].pack_forget()
                         self.files_in_tab.pop(index)
 
-                self.current_file = f
-
                 new_file_reference = {"file": f, "tab": FileButton(self, f)}
                 self.files_in_tab.append(new_file_reference)
 
                 # Transfers the text from the old file into the new
                 f.write(self.text_field.get('1.0', tk.END).strip())
-                self.display_text(f)
+                self.switch_tabs(f)
 
     def close_file(self, closing: bool, raw_file):
         """Allows the user to close a file.
 
         Key arguments:
         closing -- Boolean
-        raw_file -- TextIOWrapper
+        raw_file -- the file object
         """
         # If the user is closing the current tab
         if self.current_file == raw_file:
@@ -270,21 +274,25 @@ class TextEditor(tk.Frame):
                     style="Current.File.TButton"
                 )
 
+    def switch_tabs(self, tab_file):
+        if tab_file == self.current_file:
+            pass
+        else:
+            # Reconfigure colors to show the current file in use
+            self.focus_tabs(tab_file)
+
+            # Saves the replaced text, if any
+            if self.current_file is not None:
+                self.save_file()
+            self.current_file = tab_file
+            self.display_text(tab_file)
+
     def display_text(self, new_raw_file):
         """Displays text on the text editor based on the file in use.
 
         Key argument:
         -- new_raw_file
         """
-        # Reconfigure colors to show the current file in use
-        self.focus_tabs(new_raw_file)
-
-        # Saves the replaced text, if any
-        if self.current_file is not None:
-            self.save_file()
-
-        self.current_file = new_raw_file
-
         # Refresh the editor
         self.text_field.delete('1.0', tk.END)
 
@@ -301,14 +309,14 @@ class FileButton(ttk.Button):
             app,
             style="File.TButton",
             text=displayed_name,
-            command=lambda: app.display_text(raw_file)
+            command=lambda: app.switch_tabs(raw_file)
         )
         self.raw_file = raw_file
         self.pack(side=tk.LEFT, fill=tk.Y)
         self.config(width=len(displayed_name))
         self.bind(
-            '<Button-3>',
-            lambda event: self.close_file(False, self.raw_file)
+            '<Button-2>',  # Right click
+            lambda event: app.close_file(False, self.raw_file)
         )
 
 
