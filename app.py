@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter.font import Font as tk_font
 import os
+from random import choice
 
 
 # Colors
@@ -201,59 +202,49 @@ class TextEditor(tk.Frame):
                 f.write(self.text_field.get('1.0', tk.END).strip())
                 self.switch_tabs(f)
 
-    def close_file(self, closing: bool, raw_file):
+    def close_file(self, raw_file):
         """Allows the user to close a file.
 
         Key arguments:
-        closing -- Boolean
         raw_file -- the file object
         """
+        file_reference_to_close = None  # To hold a dictionary
+        for file_reference in self.files_in_tab:
+            if file_reference["file"] == raw_file:
+                file_reference_to_close = file_reference
+
         # If the user is closing the current tab
         if self.current_file == raw_file:
-            pass
-        elif self.current_file != raw_file or closing:
-            file_reference_to_close = None  # To hold a dictionary
-            for file_reference in self.files_in_tab:
-                if file_reference["file"] == raw_file:
-                    file_reference_to_close = file_reference
+            # Save the file (if the user wants to)
+            self.save_file()
 
+            # Remove file from the app
+            file_reference_to_close["tab"].pack_forget()
+            self.files_in_tab.remove(file_reference_to_close)
+
+            if self.files_in_tab != []:
+                # Open a random file
+                random_file_reference = choice(self.files_in_tab)
+                self.switch_tabs(random_file_reference["file"])
+            else:
+                self.text_field.delete('1.0', tk.END)
+        else:
             file_to_close = file_reference_to_close["file"]
+            original_file_tab = self.current_file
 
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
                     if f.read().strip() != "":  # If there is text
-                        self.display_text(f)
-                        file_to_save = filedialog.asksaveasfile(
-                            mode='w',
-                            defaultextension=".txt",
-                            title=f.name,
-                            initialfile="s_"+f.name
-                        )
+                        self.switch_tabs(f)
+                        self.save_new_file()
 
-                        if file_to_save is not None:  # If user wants to save
-                            with open(
-                                file_to_save.name,
-                                "r+",
-                                encoding="utf-8"
-                            ) as save_f:
-                                save_f.write(
-                                    self.text_field.get('1.0', tk.END).strip()
-                                )
-                            os.remove(file_to_close.name)
-                            file_reference_to_close["tab"].pack_forget()
-                            self.files_in_tab.remove(file_reference_to_close)
-                            self.display_text(self.current_file)
-                        elif file_to_save is None:
-                            pass
-
-                        if closing:
-                            self.display_text(self.current_file)
+                        self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
                         os.remove(file_to_close.name)
                         file_reference_to_close["tab"].pack_forget()
                         self.files_in_tab.remove(file_reference_to_close)
             else:  # If it is not called 'Untitled'
-                os.remove(file_reference_to_close.name)
+                # It is automatically saved since it is saved from tab out
                 file_reference_to_close["tab"].pack_forget()
                 self.files_in_tab.remove(file_reference_to_close)
 
@@ -316,7 +307,7 @@ class FileButton(ttk.Button):
         self.config(width=len(displayed_name))
         self.bind(
             '<Button-2>',  # Right click
-            lambda event: app.close_file(False, self.raw_file)
+            lambda event: app.close_file(self.raw_file)
         )
 
 
