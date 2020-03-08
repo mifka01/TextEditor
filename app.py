@@ -179,6 +179,8 @@ class TextEditor(tk.Frame):
 
         If the file has not been saved before,
         the function will be directed to save_new_file() instead.
+        If permanent is set to False, all untitled files will be saved
+        as temporary files.
         """
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
