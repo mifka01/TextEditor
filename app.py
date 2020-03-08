@@ -143,7 +143,7 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, file_to_open)
             }
             self.files_in_tab.append(file_reference)
-            self.switch_tabs(file_to_open)
+            self.switch_tabs(file_to_open)  # Open that file
 
     def new_file(self):
         """Allows user to create a new file.
@@ -163,7 +163,7 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, raw_file)
             }
             self.files_in_tab.append(file_reference)
-            self.switch_tabs(raw_file)
+            self.switch_tabs(raw_file)  # Open the nenwly created file
 
     def hideButton(self, button):
         """Hides the the tab button to access a particular file.
@@ -214,6 +214,8 @@ class TextEditor(tk.Frame):
 
                 # Transfers the text from the old file into the new
                 f.write(self.text_field.get('1.0', tk.END).strip())
+
+                # Move from the old file to the new
                 self.switch_tabs(f)
 
     def close_file(self, raw_file):
@@ -250,9 +252,14 @@ class TextEditor(tk.Frame):
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
                     if f.read().strip() != "":  # If there is text
+                        # Go to that file and ask if the user wants to save
                         self.switch_tabs(f)
                         self.save_new_file()
 
+                        file_reference_to_close["tab"].pack_forget()
+                        self.files_in_tab.remove(file_reference_to_close)
+
+                        #Go back to the original file once that is closed
                         self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
                         os.remove(file_to_close.name)
