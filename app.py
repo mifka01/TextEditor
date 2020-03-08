@@ -86,7 +86,7 @@ class TextEditor(tk.Frame):
             self,
             style="Open.TButton",
             text="open",
-            command=self.openFile
+            command=self.open_file
             )
         open_button.pack(side=tk.RIGHT, fill=tk.Y)
         open_button.config(width=len(open_button['text']))
@@ -96,12 +96,12 @@ class TextEditor(tk.Frame):
             self,
             style="TButton",
             text='save',
-            # command=self.saveManual
+            command=self.save_file
         )
         save_button.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
         save_button.config(width=len(save_button['text']))
 
-    def openFile(self):
+    def open_file(self):
         """Allows user to open a file.
 
         If the the file is already in the tab,
@@ -126,9 +126,14 @@ class TextEditor(tk.Frame):
             self.files_in_tab.append(file_reference)
             self.display_text(file_to_open)
 
-        file_to_open.close()
-
     def new_file(self):
+        """Allows user to create a new file.
+
+        It is automatically added to the system and
+        opened in the text editor upon creation.
+
+        It is saved in the TextEditor file directory as of now.
+        """
         raw_file = open(
             "Untitled-" + str(len(self.files_in_tab)) + ".txt",
             "w+",
@@ -147,49 +152,58 @@ class TextEditor(tk.Frame):
         """
         button.pack_forget()
 
-    # def saveManual(self):
-    #     buttonIndex = self.indexes[len(self.indexes)-1]
-    #     if self.files_in_tab[buttonIndex] is not None:
-    #         if self.files_in_tab[buttonIndex].name[0:8] == "Untitled":
-    #             self.saveNewFile()
-    #         else:
-    #             f = open(
-    #                 f"{self.files_in_tab[buttonIndex].name}",
-    #                 'r+',
-    #                 encoding='utf-8'
-    #             )
-    #             f.write(self.text_field.get("1.0", tk.END).strip())
-    #             f.close()
+    def save_file(self):
+        """Saves the file the user is on.
 
-    def saveNewFile(self):
-        """Lets user save an unsaved file.
+        If the file has not been saved before,
+        the function will be directed to save_new_file() instead.
+        """
+        if self.current_file is not None:
+            if self.current_file.name[0:8] == "Untitled":
+                self.save_new_file()
+            else:
+                with open(self.current_file.name, 'r+', encoding='utf-8') as f:
+                    current_text = self.text_field.get("1.0", tk.END).strip()
+                    f.write(current_text)
 
-        This function deletes everything it knows about the unsaved file in
-        the system and transfers the information into a new file, with a
-        new name, but with the same content in terms of text.
-        The new file is then re-added into the system.
+    def save_new_file(self):
+        """Lets the user save a newly created file.
+
+        The function transfers the information into a new file with a new name,
+        deleting the old file's existence in the system and
+        replacing it with the file with the same information.
         """
         file_to_save = filedialog.asksaveasfile(
             mode='w',
             defaultextension=".txt",
             initialfile="s_" + self.current_file.name
         )
+
+        # If the user did not click cancel
         if file_to_save is not None:
             with open(file_to_save.name, "r+", encoding="utf-8") as f:
                 os.remove(self.current_file.name)
-                self.current_file = None  # Soon to be replaced by the new file
-                self.current_file.pack_forget()
                 for index, file_reference in enumerate(self.files_in_tab):
-                    if file_reference.name == self.current_file.name:
+                    if file_reference["file"].name == self.current_file.name:
+                        file_reference["tab"].pack_forget()
                         self.files_in_tab.pop(index)
+
+                self.current_file = f
 
                 new_file_reference = {"file": f, "tab": FileButton(self, f)}
                 self.files_in_tab.append(new_file_reference)
+
+                # Transfers the text from the old file into the new
                 f.write(self.text_field.get('1.0', tk.END).strip())
                 self.display_text(f)
 
-    def closeFile(self, closing, raw_file):
+    def close_file(self, closing: bool, raw_file):
+        """Allows the user to close a file.
 
+        Key arguments:
+        closing -- Boolean
+        raw_file -- TextIOWrapper
+        """
         # If the user is closing the current tab
         if self.current_file == raw_file:
             pass
@@ -239,54 +253,44 @@ class TextEditor(tk.Frame):
                 file_reference_to_close["tab"].pack_forget()
                 self.files_in_tab.remove(file_reference_to_close)
 
-    def internal_save(self, raw_file):
-        """Saves the user's current file.
-
-        Key arguments:
-        raw_file -- TextIOWrapper
-
-        The text is not saved to the .txt file directly,
-        but it is saved in the text editor.
-        Thus, when the user switches back to the this file tab,
-        the information is still there.
-        """
-        with open(
-            raw_file.name,
-            'r+',
-            encoding='utf-8'
-        ) as f:
-            f.write(self.text_field.get("1.0", tk.END).strip())
-            f.close()
-
-    def display_text(self, new_raw_file):
-        """Transfers text from a file into the text editor.
+    def focus_tabs(self, focused_raw_file):
+        """Focus the tabs to show which one is in use.
 
         Key argument:
-        new_raw_file -- TextIOWrapper
+        focused_raw_file
         """
-        # Reconfigure colors to show the current file in use
         for file_reference in self.files_in_tab:
             if (self.current_file is not None and
                     file_reference["file"] == self.current_file):
                 file_reference["tab"].configure(
                     style="File.TButton"
                 )
-            elif file_reference["file"] == new_raw_file:
+            elif file_reference["file"] == focused_raw_file:
                 file_reference["tab"].configure(
                     style="Current.File.TButton"
                 )
 
+    def display_text(self, new_raw_file):
+        """Displays text on the text editor based on the file in use.
+
+        Key argument:
+        -- new_raw_file
+        """
+        # Reconfigure colors to show the current file in use
+        self.focus_tabs(new_raw_file)
+
         # Saves the replaced text, if any
         if self.current_file is not None:
-            self.internal_save(self.current_file)
+            self.save_file()
 
         self.current_file = new_raw_file
 
-        self.text_field.delete('1.0', tk.END)  # Refresh the editor
+        # Refresh the editor
+        self.text_field.delete('1.0', tk.END)
+
         # Replace the editor with the new file's text
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
-
         self.text_field.insert('1.0', text)
 
 
@@ -299,9 +303,13 @@ class FileButton(ttk.Button):
             text=displayed_name,
             command=lambda: app.display_text(raw_file)
         )
+        self.raw_file = raw_file
         self.pack(side=tk.LEFT, fill=tk.Y)
         self.config(width=len(displayed_name))
-        self.bind('<Button-3>', lambda event: self.closeFile(False, index))
+        self.bind(
+            '<Button-3>',
+            lambda event: self.close_file(False, self.raw_file)
+        )
 
 
 root = tk.Tk()
