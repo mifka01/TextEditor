@@ -1,9 +1,7 @@
 import tkinter as tk
-import tkinter.scrolledtext as ScrolledText
 from tkinter.font import Font as tk_font
 from tkinter import filedialog
 import os
-import numpy as np
 
 
 # Variables -- check
@@ -74,22 +72,22 @@ class TextField(tk.Text):
         self.bind("<Control-r>", color)
         self.bind("<Control-v>", paste)
         self.bind("<Control-d>", textReset)
-        self.pack(fill=tk.BOTH,expand=True)
+        self.pack(fill=tk.BOTH, expand=True)
 
 # Methods
 
 
 def openFile():
-    file = tk.filedialog.askopenfile(parent=root, mode='r+')
+    file = filedialog.askopenfile(parent=root, mode='r+')
     entry = True
     for x in files:
-        if x != None:
+        if x is not None:
             if x.name == file.name:
                 entry = False
         else:
             pass
 
-    if file != None and entry:
+    if file is not None and entry:
         files.append(file)
         buttons.append(FileButton(files.index(file)))
         displayText(files.index(file), indexes)
@@ -110,7 +108,7 @@ def hideButton():
 
 def saveManual():
     buttonIndex = indexes[len(indexes)-1]
-    if files[buttonIndex] != None:
+    if files[buttonIndex] is not None:
         if files[buttonIndex].name[0:8] == "Untitled":
             saveNewFile()
         else:
@@ -123,9 +121,10 @@ def saveManual():
 
 def saveNewFile():
     f = tk.filedialog.asksaveasfile(
-        mode='w', defaultextension=".txt", initialfile="s_"+files[indexes[len(indexes)-1]].name)
+        mode='w', defaultextension=".txt",
+        initialfile="s_"+files[indexes[len(indexes)-1]].name)
     file = open(f.name, "r+", encoding="utf-8")
-    if file != None:
+    if file is not None:
 
         oldIndex = indexes[len(indexes)-1]
 
@@ -151,14 +150,16 @@ def closeFile(closing, index):
             if files.index(file) == index:
 
                 if files[index].name[0:8] == "Untitled":
-                    file = open(files[index].name, "r+",encoding="utf-8")
+                    file = open(files[index].name, "r+", encoding="utf-8")
                     if file.read().strip() != "":
                         displayText(index, indexes)
                         f = tk.filedialog.asksaveasfile(
-                            mode='w', defaultextension=".txt", title=files[index].name, initialfile="s_"+files[index].name)
-                        
-                        if f != None:
-                            file = open(f.name,"r+",encoding="utf-8")
+                            mode='w', defaultextension=".txt",
+                            title=files[index].name,
+                            initialfile="s_"+files[index].name)
+
+                        if f is not None:
+                            file = open(f.name, "r+", encoding="utf-8")
                             file.write(textField.get('1.0', tk.END).strip())
                             file.close()
                             os.remove(files[index].name)
@@ -169,7 +170,7 @@ def closeFile(closing, index):
                         if closing:
 
                             displayText(indexes[len(indexes)-2], indexes)
-                        if f == None:
+                        if f is None:
                             break
                     else:
                         file.close()
@@ -187,7 +188,7 @@ def closeFile(closing, index):
 
 
 def autoSave():
-    if files[indexes[len(indexes)-2]] != None:
+    if files[indexes[len(indexes)-2]] is not None:
         f = open(f"{files[indexes[len(indexes)-2]].name}",
                  'r+', encoding='utf-8')
         f.write(textField.get("1.0", tk.END).strip())
@@ -203,12 +204,12 @@ def displayText(index, indexes):
         i == 0) or indexes[i] != indexes[i-1]]
 
     for otherButton in buttons:
-        if otherButton != None:
+        if otherButton is not None:
             otherButton['bg'] = bgColor
             otherButton['fg'] = fgColor
         else:
             pass
-    if buttons[index] != None:
+    if buttons[index] is not None:
         buttons[index]['bg'] = fgColor
         buttons[index]['fg'] = bgColor
     else:
@@ -217,7 +218,7 @@ def displayText(index, indexes):
     autoSave()
 
     textField.delete('1.0', tk.END)
-    if files[index] != None:
+    if files[index] is not None:
 
         f = open(f'{files[index].name}', "r+", encoding="utf-8")
         text = f.read()
@@ -288,7 +289,7 @@ def ctrlN(event):
 
 def ctrlQ(event):
     for x in files:
-        if x != None:
+        if x is not None:
             if x.name[0:8] == "Untitled":
                 closeFile(True, files.index(x))
 
@@ -299,34 +300,23 @@ def ctrlQ(event):
 
 def leftFile(event):
     currentButton = indexes[len(indexes)-1]
-    workingButtons = [i for i,x in enumerate(buttons) if x !=None]
+    workingButtons = [i for i, x in enumerate(buttons) if x is not None]
     nextButtonIndex = workingButtons.index(currentButton)-1
 
-
     if nextButtonIndex >= 0:
-        displayText(workingButtons[nextButtonIndex],indexes)
-    
-    
+        displayText(workingButtons[nextButtonIndex], indexes)
 
 
 def rightFile(event):
     currentButton = indexes[len(indexes)-1]
-    workingButtons = [i for i,x in enumerate(buttons) if x !=None]
+    workingButtons = [i for i, x in enumerate(buttons) if x is not None]
     nextButtonIndex = workingButtons.index(currentButton)+1
 
-
     if nextButtonIndex <= len(workingButtons)-1:
-        displayText(workingButtons[nextButtonIndex],indexes)
-   
-
-  
-   
-            
-            
+        displayText(workingButtons[nextButtonIndex], indexes)
 
 
 # Static parts
-
 textField = TextField()
 
 plusButton = tk.Button(buttonCanvas)
