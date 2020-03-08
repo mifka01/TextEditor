@@ -10,7 +10,7 @@ BACKGROUND_COLOR = "white"
 
 # Fonts
 BUTTON_FONT = ('Microsoft Sans Serif', 10)
-# TITTLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
+# TITLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
 TEXT_FONT = ('Microsoft Sans Serif', 14)
 
 
@@ -218,6 +218,10 @@ class TextEditor(tk.Frame):
                 # Move from the old file to the new
                 self.switch_tabs(f)
 
+                return(f)
+        else:
+            return None
+
     def close_file(self, raw_file):
         """Allows the user to close a file.
 
@@ -235,9 +239,7 @@ class TextEditor(tk.Frame):
             self.save_file()
             self.text_field.delete('1.0', tk.END)
 
-            # Remove file from the app
-            file_reference_to_close["tab"].pack_forget()
-            self.files_in_tab.remove(file_reference_to_close)
+            self.remove_file_from_app(file_reference_to_close)
 
             if self.files_in_tab != []:
                 # Open a random file
@@ -254,21 +256,33 @@ class TextEditor(tk.Frame):
                     if f.read().strip() != "":  # If there is text
                         # Go to that file and ask if the user wants to save
                         self.switch_tabs(f)
-                        self.save_new_file()
+                        new_file = self.save_new_file()
 
-                        file_reference_to_close["tab"].pack_forget()
-                        self.files_in_tab.remove(file_reference_to_close)
+                        if new_file is not None:
+                            self.remove_file_from_app(new_file)
+                        else:
+                            self.remove_file_from_app(file_to_close)
 
-                        #Go back to the original file once that is closed
+                        # Go back to the original file once that is closed
                         self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
                         os.remove(file_to_close.name)
-                        file_reference_to_close["tab"].pack_forget()
-                        self.files_in_tab.remove(file_reference_to_close)
+                        self.remove_file_from_app(file_reference_to_close)
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
-                file_reference_to_close["tab"].pack_forget()
-                self.files_in_tab.remove(file_reference_to_close)
+                self.remove_file_from_app(file_reference_to_close)
+
+    def remove_file_from_app(self, file_reference):
+        """Removes the file reference from the app.
+
+        Key argument:
+        -- file_reference: dict ({"file": x, "tab": y})
+
+        The FileButton tk.Button object disappears from the tab bar,
+        and the dict is removed from the self.files_in_tab variable.
+        """
+        file_reference["tab"].pack_forget()
+        self.files_in_tab.remove(file_reference)
 
     def focus_tabs(self, focused_raw_file):
         """Focus the tabs to show which one is in use.
@@ -316,6 +330,41 @@ class TextEditor(tk.Frame):
             text = f.read()
         self.text_field.insert('1.0', text)
 
+    def ctrlS(self, event):
+        self.save_file()
+
+    def ctrlO(self, event):
+        self.open_file()
+
+    def ctrlN(self, event):
+        self.new_file()
+
+    def ctrlQ(self, event):
+        for file_reference in self.files_in_tab:
+            if file_reference["file"].name[0:8] == "Untitled":
+                self.close_file(file_reference["file"])
+
+        root.quit()
+
+    def left_file(self, event):
+        for index, file_reference in enumerate(self.files_in_tab):
+            if file_reference["file"] == self.current_file:
+                if index - 1 < 0:  # User is already at the left-most tab
+                    return
+
+                file_to_open = self.files_in_tab[index - 1]["file"]
+                self.switch_tabs(file_to_open)
+
+    def right_file(self, event):
+        for index, file_reference in enumerate(self.files_in_tab):
+            if file_reference["file"] == self.current_file:
+                # If the user is already at the right-most tab
+                if index + 1 > len(self.files_in_tab) - 1:
+                    return
+
+                file_to_open = self.files_in_tab[index + 1]["file"]
+                self.switch_tabs(file_to_open)
+
 
 class FileButton(ttk.Button):
     def __init__(self, app, raw_file):
@@ -342,5 +391,14 @@ text_editor = TextEditor(master=root)
 text_editor.master.title("Notepad^")
 text_editor.master.geometry("900x700")
 text_editor.master.iconbitmap('icons/Notepad.ico')
+
+# Binds
+text_editor.master.bind('<Control-s>', text_editor.ctrlS)
+text_editor.master.bind('<Control-o>', text_editor.ctrlO)
+text_editor.master.bind('<Control-q>', text_editor.ctrlQ)
+text_editor.master.bind('<Control-n>', text_editor.ctrlN)
+text_editor.master.bind('<Control-Left>', text_editor.left_file)
+text_editor.master.bind('<Control-Right>', text_editor.right_file)
+text_editor.master.protocol("WM_DELETE_WINDOW", lambda: text_editor.ctrlQ(""))
 
 root.mainloop()  # Start the program
