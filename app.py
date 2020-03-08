@@ -55,6 +55,8 @@ class TextEditor(tk.Frame):
         )
 
     def create_widgets(self):
+        """Createst the widgets needed for the application."""
+        # Initialize text_field
         self.text_canvas = tk.Canvas(self.master)
         self.text_canvas['bg'] = BACKGROUND_COLOR
         self.text_canvas['highlightthickness'] = "0"
@@ -151,15 +153,17 @@ class TextEditor(tk.Frame):
 
         It is saved in the TextEditor file directory as of now.
         """
-        raw_file = open(
+        with open(
             "Untitled-" + str(len(self.files_in_tab)) + ".txt",
             "w+",
             encoding='utf-8'
-        )
-        file_reference = {"file": raw_file, "tab": FileButton(self, raw_file)}
-        self.files_in_tab.append(file_reference)
-        self.switch_tabs(raw_file)
-        raw_file.close()
+        ) as raw_file:
+            file_reference = {
+                "file": raw_file,
+                "tab": FileButton(self, raw_file)
+            }
+            self.files_in_tab.append(file_reference)
+            self.switch_tabs(raw_file)
 
     def hideButton(self, button):
         """Hides the the tab button to access a particular file.
