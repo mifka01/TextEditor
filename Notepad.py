@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 
-# Variables
+# Variables -- check
 files = []
 indexes = []
 buttons = []
@@ -22,7 +22,7 @@ root.geometry("900x700")
 root.iconbitmap('icons/Notepad.ico')
 
 
-# Fonts
+# Fonts -- check
 buttonFont = tk_font(family='Microsoft Sans Serif', size=10)
 titleFont = tk_font(family='Georgia', size=30, weight="bold")
 textFont = tk_font(family='Microsoft Sans Serif', size=14)
