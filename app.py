@@ -191,12 +191,14 @@ class TextEditor(tk.Frame):
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
                 return self.save_new_file()
-            else:
-              
+            else:    
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
                     current_text = self.text_field.get("1.0", tk.END).strip()
                     f.write(current_text)
                 f.close()
+                for file_reference in self.files_in_tab:
+                    if file_reference['file'] == self.current_file:
+                        return file_reference
 
     def save_new_file(self):
         """Lets the user save a newly created file.
@@ -338,12 +340,8 @@ class TextEditor(tk.Frame):
             # Reconfigure colors to show the current file in use
             self.focus_tabs(tab_file)
 
-            # Saves the replaced text, if any
-            entry = True
-            for file_reference in self.files_in_tab:
-                if file_reference != self.current_file:
-                    entry = False
-            if self.current_file is not None and entry:
+            # Saves the replaced text, if any                    
+            if self.current_file is not None and len(self.files_in_tab) != 1:
                 # Changes to unsaved file are temporary
                 self.save_file(False)
 
