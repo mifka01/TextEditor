@@ -393,7 +393,7 @@ text_editor.master.title("Notepad^")
 text_editor.master.geometry("900x700")
 text_editor.master.iconbitmap('icons/Notepad.ico')
 
-# Binds
+# Binds (if on MACOSX, it is Cmd instead of Ctrl)
 if platform() == 'Darwin':
     text_editor.master.bind('<Command-s>', text_editor.ctrlS)
     text_editor.master.bind('<Command-o>', text_editor.ctrlO)
