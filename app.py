@@ -110,12 +110,11 @@ class TextEditor(tk.Frame):
         self.text_field['state'] = 'normal'
         self.text_field['padx'] = '60'
         self.text_field['pady'] = '20'
+        
         # self.text_field.bind("<Control-e>", title)
         # self.text_field.bind("<Control-r>", color)
         # self.text_field.bind("<Control-v>", paste)
-        # self.text_field.bind("<Control-d>", textReset)
-
-        self.text_field.pack(fill=tk.BOTH, expand=True)
+        # self.text_field.bind("<Control-d>", textReset)  
 
     def prompt_to_open_file(self):
         """Prompt the user to open a file.
@@ -333,7 +332,7 @@ class TextEditor(tk.Frame):
                 )
 
     def switch_tabs(self, tab_file):
-        self.text_field.pack()  # User needs to type
+        self.text_field.pack(fill=tk.BOTH, expand=True)  # User needs to type
 
         if tab_file == self.current_file:
             pass
