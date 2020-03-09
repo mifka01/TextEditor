@@ -224,7 +224,7 @@ class TextEditor(tk.Frame):
         # If the user did not click cancel
         if file_to_save is not None:
             with open(file_to_save.name, "r+", encoding="utf-8") as f:
-
+                print("here")
                 os.remove(self.current_file.name)
                 for index, file_reference in enumerate(self.files_in_tab):
                     if file_reference["file"].name == self.current_file.name:
@@ -236,12 +236,11 @@ class TextEditor(tk.Frame):
 
                 # Transfers the text from the old file into the new
                 f.write(self.text_field.get('1.0', tk.END).strip())
-
+                f.close()
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
-                f.close()
-
+                
                 return(new_file_reference)
         else:
             return None
@@ -364,10 +363,11 @@ class TextEditor(tk.Frame):
         """
         # Refresh the editor
         self.text_field.delete('1.0', tk.END)
-
+       
         # Replace the editor with the new file's text
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
+            print(text)
         self.text_field.insert('1.0', text)
         f.close()
 
