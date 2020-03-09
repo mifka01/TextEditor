@@ -26,12 +26,12 @@ titleFont = tk_font(family='Georgia', size=30, weight="bold")
 textFont = tk_font(family='Microsoft Sans Serif', size=14)
 
 # Canvases
-textCanvas = tk.Canvas(root)
+textCanvas = tk.Frame(root)
 textCanvas['bg'] = bgColor
 textCanvas['highlightthickness'] = "0"
 textCanvas.place(relx=0, rely=0.05, relwidth=1, relheight=1)
 
-buttonCanvas = tk.Canvas(root)
+buttonCanvas = tk.Frame(root)
 buttonCanvas['bg'] = bgColor
 buttonCanvas['highlightthickness'] = "0"
 buttonCanvas.place(relx=0, rely=0, relwidth=1, relheight=0.05)
