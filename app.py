@@ -31,7 +31,8 @@ class TextEditor(tk.Frame):
 
         # Configuring styles
         style = ThemedStyle(master)
-        style.set_theme_advanced("elegance")
+        print(style.get_themes())
+        style.set_theme_advanced("clearlooks")
 
         style.configure(
             'TButton',
@@ -45,6 +46,7 @@ class TextEditor(tk.Frame):
         style.configure(
             'Plus.TButton',
             font=('MS Reference Sans Serif', 20)
+
         )
 
         style.configure(
@@ -60,36 +62,42 @@ class TextEditor(tk.Frame):
 
     def create_widgets(self):
         """Createst the widgets needed for the application."""
-        # Initialize text_field
+        # Initialize text_frame
         self.text_frame = tk.Frame(self.master)
         self.text_frame['bg'] = BACKGROUND_COLOR
         self.text_frame['highlightthickness'] = "0"
         self.text_frame.place(relx=0, rely=0.05, relwidth=1, relheight=1)
         self.initialize_text_field()
 
+        # Initialize button_frame
+        self.button_frame = tk.Frame(self.master)
+        self.button_frame['bg'] = BACKGROUND_COLOR
+        self.button_frame['highlightthickness'] = "0"
+        self.button_frame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
+
         # Initialize plus_button
         self.plus_button = ttk.Button(
-            self,
+            self.button_frame,
             style="Plus.TButton",
             text="+",
             command=self.new_file
         )
-        self.plus_button.pack(side=tk.LEFT, fill=tk.Y)
+        self.plus_button.pack(side=tk.LEFT)
         self.plus_button.config(width=3)
 
         # Initialize open_button
         open_button = ttk.Button(
-            self,
+            self.button_frame,
             style="Open.TButton",
             text="open",
             command=self.open_file
         )
-        open_button.pack(side=tk.RIGHT, fill=tk.Y)
+        open_button.pack(side=tk.RIGHT)
         open_button.config(width=len(open_button['text']))
 
         # Initialize save_button
         save_button = ttk.Button(
-            self,
+            self.button_frame,
             style="TButton",
             text='save',
             command=self.save_file
@@ -110,11 +118,11 @@ class TextEditor(tk.Frame):
         self.text_field['state'] = 'normal'
         self.text_field['padx'] = '60'
         self.text_field['pady'] = '20'
-        
+
         # self.text_field.bind("<Control-e>", title)
         # self.text_field.bind("<Control-r>", color)
         # self.text_field.bind("<Control-v>", paste)
-        # self.text_field.bind("<Control-d>", textReset)  
+        # self.text_field.bind("<Control-d>", textReset)
 
     def prompt_to_open_file(self):
         """Prompt the user to open a file.
@@ -168,7 +176,7 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, raw_file)
             }
             self.files_in_tab.append(file_reference)
-     
+
             self.switch_tabs(raw_file)  # Open the nenwly created file
         self.files_count += 1
 
@@ -191,7 +199,7 @@ class TextEditor(tk.Frame):
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
                 return self.save_new_file()
-            else:    
+            else:
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
                     current_text = self.text_field.get("1.0", tk.END).strip()
                     f.write(current_text)
@@ -254,7 +262,7 @@ class TextEditor(tk.Frame):
             # Save the file (if the user wants to)
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 if f.read().strip() != "":
-                    f.close()     
+                    f.close()
                     file_reference = self.save_file()
                     self.text_field.delete('1.0', tk.END)
 
@@ -267,7 +275,7 @@ class TextEditor(tk.Frame):
             if self.files_in_tab != []:
                 # Open a random file
                 random_file_reference = choice(self.files_in_tab)
-               
+
                 self.switch_tabs(random_file_reference["file"])
             else:
                 self.prompt_to_open_file()
@@ -340,7 +348,7 @@ class TextEditor(tk.Frame):
             # Reconfigure colors to show the current file in use
             self.focus_tabs(tab_file)
 
-            # Saves the replaced text, if any                    
+            # Saves the replaced text, if any
             if self.current_file is not None and len(self.files_in_tab) != 1:
                 # Changes to unsaved file are temporary
                 self.save_file(False)
@@ -377,10 +385,10 @@ class TextEditor(tk.Frame):
         index = 0
 
         while index < original_files_len:
-            if self.files_in_tab[0]["file"].name[0:8] == "Untitled":     
-                self.close_file(self.files_in_tab[0]['file']) 
+            if self.files_in_tab[0]["file"].name[0:8] == "Untitled":
+                self.close_file(self.files_in_tab[0]['file'])
             index += 1
-             
+
         root.quit()
 
     def left_file(self, event):
@@ -407,7 +415,7 @@ class FileButton(ttk.Button):
     def __init__(self, app, raw_file):
         displayed_name = os.path.basename(raw_file.name)
         super().__init__(
-            app,
+            app.button_frame,
             style="File.TButton",
             text=displayed_name,
             command=lambda: app.switch_tabs(raw_file)
@@ -422,6 +430,7 @@ class FileButton(ttk.Button):
 
 
 root = tk.Tk()
+root['bg'] = BACKGROUND_COLOR
 text_editor = TextEditor(master=root)
 
 # Window settings
