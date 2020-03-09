@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from ttkthemes import ThemedStyle
 import os
 from random import choice
 from platform import system as platform
@@ -18,6 +19,7 @@ TEXT_FONT = ('Microsoft Sans Serif', 14)
 class TextEditor(tk.Frame):
     files_in_tab = []
     current_file = None
+    files_count = 0
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -25,10 +27,11 @@ class TextEditor(tk.Frame):
         self.pack()
         self.create_widgets()
 
-        self.prompt_to_open_file()  # Tell user to open something
+        self.prompt_to_open_file()  # Tells user to open something
 
         # Configuring styles
-        style = ttk.Style()
+        style = ThemedStyle(master)
+        style.set_theme_advanced("elegance")
 
         style.configure(
             'TButton',
@@ -56,7 +59,7 @@ class TextEditor(tk.Frame):
         )
 
     def create_widgets(self):
-        """Createst the widgets needed for the application."""
+        """Creates the widgets needed for the application."""
         # Initialize text_field
         self.text_canvas = tk.Canvas(self.master)
         self.text_canvas['bg'] = BACKGROUND_COLOR
@@ -80,7 +83,7 @@ class TextEditor(tk.Frame):
             style="Open.TButton",
             text="open",
             command=self.open_file
-            )
+        )
         open_button.pack(side=tk.RIGHT, fill=tk.Y)
         open_button.config(width=len(open_button['text']))
 
@@ -116,17 +119,17 @@ class TextEditor(tk.Frame):
     def prompt_to_open_file(self):
         """Prompt the user to open a file.
 
-        This function removes the text field completely.
-        """
+       This function removes the text field completely.
+       """
         self.text_field.delete("1.0", tk.END)
         self.text_field.pack_forget()
 
     def open_file(self):
         """Allows user to open a file.
 
-        If the the file is already in the tab,
-        the file will not be opened again.
-        """
+       If the the file is already in the tab,
+       the file will not be opened again.
+       """
         file_to_open = filedialog.askopenfile(
             parent=self.master,
             mode='r+'
@@ -149,13 +152,14 @@ class TextEditor(tk.Frame):
     def new_file(self):
         """Allows user to create a new file.
 
-        It is automatically added to the system and
-        opened in the text editor upon creation.
+       It is automatically added to the system and
+       opened in the text editor upon creation.
 
-        It is saved in the TextEditor file directory as of now.
-        """
+       It is saved in the TextEditor file directory as of now.
+       """
+
         with open(
-            "Untitled-" + str(len(self.files_in_tab)) + ".txt",
+            "Untitled-" + str(self.files_count) + ".txt",
             "w+",
             encoding='utf-8'
         ) as raw_file:
@@ -164,14 +168,16 @@ class TextEditor(tk.Frame):
                 "tab": FileButton(self, raw_file)
             }
             self.files_in_tab.append(file_reference)
+
             self.switch_tabs(raw_file)  # Open the nenwly created file
+        self.files_count += 1
 
     def hideButton(self, button):
         """Hides the the tab button to access a particular file.
 
-        Key arguments:
-        button -- FileButton
-        """
+       Key arguments:
+       button -- FileButton
+       """
         button.pack_forget()
 
     def save_file(self, permanent=True):
@@ -184,14 +190,22 @@ class TextEditor(tk.Frame):
         """
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
-                self.save_new_file()
+                return self.save_new_file()
             else:
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
                     current_text = self.text_field.get("1.0", tk.END).strip()
                     f.write(current_text)
+                f.close()
+                for file_reference in self.files_in_tab:
+                    if file_reference['file'] == self.current_file:
+                        return file_reference
 
     def save_new_file(self):
         """Lets the user save a newly created file.
+
+        Returns:
+        -- file reference (if user agreed to save)
+        -- None (if the user clicks no)
 
         The function transfers the information into a new file with a new name,
         deleting the old file's existence in the system and
@@ -206,6 +220,7 @@ class TextEditor(tk.Frame):
         # If the user did not click cancel
         if file_to_save is not None:
             with open(file_to_save.name, "r+", encoding="utf-8") as f:
+
                 os.remove(self.current_file.name)
                 for index, file_reference in enumerate(self.files_in_tab):
                     if file_reference["file"].name == self.current_file.name:
@@ -221,6 +236,7 @@ class TextEditor(tk.Frame):
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
+                f.close()
 
                 return(new_file_reference)
         else:
@@ -240,60 +256,74 @@ class TextEditor(tk.Frame):
         # If the user is closing the current tab
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
-            file_reference = self.save_file()
-            self.text_field.delete('1.0', tk.END)
+            with open(self.current_file.name, "r+", encoding="utf-8") as f:
+                if f.read().strip() != "":
+                    f.close()
+                    file_reference = self.save_file()
+                    self.text_field.delete('1.0', tk.END)
 
-            self.remove_file_from_app(file_reference)
-
+                    self.remove_file_from_app(file_reference)
+                else:
+                    f.close()
+                    os.remove(file_reference['file'].name)
+                    self.remove_file_from_app(file_reference)
+ 
             if self.files_in_tab != []:
                 # Open a random file
                 random_file_reference = choice(self.files_in_tab)
+               
                 self.switch_tabs(random_file_reference["file"])
             else:
                 self.prompt_to_open_file()
         else:
             file_to_close = file_reference_to_close["file"]
+ 
             original_file_tab = self.current_file
-
+ 
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
                     if f.read().strip() != "":  # If there is text
                         # Go to that file and ask if the user wants to save
+                        f.close()
                         self.switch_tabs(f)
                         new_file = self.save_new_file()
-
+ 
                         if new_file is not None:
                             self.remove_file_from_app(new_file)
                         else:
                             self.remove_file_from_app(file_to_close)
-
+ 
                         # Go back to the original file once that is closed
                         self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
+                        f.close()
                         os.remove(file_to_close.name)
                         self.remove_file_from_app(file_reference_to_close)
+ 
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
                 self.remove_file_from_app(file_reference_to_close)
-
+ 
     def remove_file_from_app(self, file_reference):
         """Removes the file reference from the app.
-
-        Key argument:
-        -- file_reference: dict ({"file": x, "tab": y})
-
-        The FileButton tk.Button object disappears from the tab bar,
-        and the dict is removed from the self.files_in_tab variable.
-        """
+ 
+       Key argument:
+       -- file_reference: dict ({"file": x, "tab": y})
+ 
+       The FileButton tk.Button object disappears from the tab bar,
+       and the dict is removed from the self.files_in_tab variable.
+       """
+ 
         file_reference["tab"].pack_forget()
+ 
         self.files_in_tab.remove(file_reference)
-
+ 
     def focus_tabs(self, focused_raw_file):
         """Focus the tabs to show which one is in use.
-
-        Key argument:
-        focused_raw_file
-        """
+ 
+       Key argument:
+       focused_raw_file
+       """
         for file_reference in self.files_in_tab:
             if (self.current_file is not None and
                     file_reference["file"] == self.current_file):
@@ -314,8 +344,8 @@ class TextEditor(tk.Frame):
             # Reconfigure colors to show the current file in use
             self.focus_tabs(tab_file)
 
-            # Saves the replaced text, if any
-            if self.current_file is not None:
+            # Saves the replaced text, if any                    
+            if self.current_file is not None and len(self.files_in_tab) != 1:
                 # Changes to unsaved file are temporary
                 self.save_file(False)
 
@@ -325,9 +355,9 @@ class TextEditor(tk.Frame):
     def display_text(self, new_raw_file):
         """Displays text on the text editor based on the file in use.
 
-        Key argument:
-        -- new_raw_file
-        """
+       Key argument:
+       -- new_raw_file
+       """
         # Refresh the editor
         self.text_field.delete('1.0', tk.END)
 
@@ -335,6 +365,7 @@ class TextEditor(tk.Frame):
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
         self.text_field.insert('1.0', text)
+        f.close()
 
     def ctrlS(self, event):
         self.save_file()
@@ -346,9 +377,10 @@ class TextEditor(tk.Frame):
         self.new_file()
 
     def ctrlQ(self, event):
-        for file_reference in self.files_in_tab:
-            if file_reference["file"].name[0:8] == "Untitled":
-                self.close_file(file_reference["file"])
+        """Quit the application."""
+        while self.files_in_tab != []:
+            if self.files_in_tab[0]["file"].name[0:8] == "Untitled":
+                self.close_file(self.files_in_tab[0]['file'])
 
         root.quit()
 
