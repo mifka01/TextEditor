@@ -4,6 +4,7 @@ import os
 from random import choice
 from platform import system as platform
 
+# THIS IS A TEST
 
 # Colors
 FOREGROUND_COLOR = "#282828"
