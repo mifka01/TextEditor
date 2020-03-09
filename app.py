@@ -31,8 +31,8 @@ class TextEditor(tk.Frame):
 
         # Configuring styles
         style = ThemedStyle(master)
-        print(style.get_themes())
-        style.set_theme_advanced("clearlooks")
+     
+        style.set_theme("default")
 
         style.configure(
             'TButton',
@@ -56,7 +56,7 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'Current.File.TButton',
-            background=FOREGROUND_COLOR,
+            background=FOREGROUND_COLOR,        
             foreground=BACKGROUND_COLOR
         )
 
