@@ -228,12 +228,11 @@ class TextEditor(tk.Frame):
 
                 # Transfers the text from the old file into the new
                 f.write(self.text_field.get('1.0', tk.END).strip())
-
+                f.close()
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
-                f.close()
-
+                
                 return(new_file_reference)
         else:
             return None
