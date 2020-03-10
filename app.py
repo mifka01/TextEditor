@@ -255,10 +255,14 @@ class TextEditor(tk.Frame):
 
         Key arguments:
         reference_to_close -- file reference dict or file
+
+        If reference_to_close is a raw file,
+        the function retrieve the complete file reference.
         """
         if type(reference_to_close) is not dict:
             for file_reference in self.files_in_tab:
                 if file_reference["file"] == reference_to_close:
+                    # Reassigns the variable to its file reference
                     reference_to_close = file_reference
 
         # If the user is closing the current tab
