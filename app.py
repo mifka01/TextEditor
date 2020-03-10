@@ -402,7 +402,6 @@ class TextEditor(tk.Frame):
     def ctrlQ(self, event):
         """Quit the application."""
         while self.files_in_tab != []:
-            print(self.files_in_tab)
             self.close_file(self.files_in_tab[0]['file'])
 
         root.quit()
