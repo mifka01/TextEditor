@@ -250,36 +250,37 @@ class TextEditor(tk.Frame):
         else:
             return None
 
-    def close_file(self, raw_file):
+    def close_file(self, reference_to_close):
         """Allows the user to close a file.
 
         Key arguments:
-        raw_file -- the file object
+        reference_to_close -- file reference dict or file
         """
-        file_reference_to_close = None  # To hold a dictionary
-        for file_reference in self.files_in_tab:
-            if file_reference["file"] == raw_file:
-                file_reference_to_close = file_reference
+        if type(reference_to_close) is not dict:
+            for file_reference in self.files_in_tab:
+                if file_reference["file"] == reference_to_close:
+                    reference_to_close = file_reference
 
         # If the user is closing the current tab
-        if self.current_file == raw_file:
+        if self.current_file == reference_to_close["file"]:
             # Save the file (if the user wants to)
 
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 text = f.read().strip()
 
             if text != "":  # If there is text
-                file_reference = self.save_file()
+                new_file_reference = self.save_file()
                 self.text_field.delete('1.0', tk.END)
 
-                if file_reference is not None:
-                    self.remove_file_from_app(file_reference)
+                if new_file_reference is not None:
+                    self.remove_file_from_app(new_file_reference)
                 else:
-                    self.remove_file_from_app(file_reference_to_close)
+                    self.remove_file_from_app(reference_to_close)
             else:
                 # If there is no text, then there is no point keeping it
-                os.remove(file_reference['file'].name)
-                self.remove_file_from_app(file_reference)
+                self.current_file = None
+                os.remove(reference_to_close['file'].name)
+                self.remove_file_from_app(reference_to_close)
 
             if self.files_in_tab != []:
                 # Open a random file
@@ -289,7 +290,7 @@ class TextEditor(tk.Frame):
             else:
                 self.prompt_to_open_file()
         else:
-            file_to_close = file_reference_to_close["file"]
+            file_to_close = reference_to_close["file"]
             original_file_tab = self.current_file
 
             if file_to_close.name[0:8] == "Untitled":  # If not saved
@@ -299,23 +300,23 @@ class TextEditor(tk.Frame):
                 if text != "":  # If there is text
                     # Go to that file and ask if the user wants to save
                     self.switch_tabs(f)
-                    new_file = self.save_new_file()
+                    new_file_reference = self.save_new_file()
 
-                    if new_file is not None:
-                        self.remove_file_from_app(new_file)
+                    if new_file_reference is not None:
+                        self.remove_file_from_app(new_file_reference)
                     else:
                         os.remove(file_to_close.name)  # Since it is a temp
-                        self.remove_file_from_app(file_reference_to_close)
+                        self.remove_file_from_app(reference_to_close)
 
                     # Go back to the original file once that is closed
                     self.current_file = None
                     self.switch_tabs(original_file_tab)
                 else:  # If the untitled file is empty
                     os.remove(file_to_close.name)
-                    self.remove_file_from_app(file_reference_to_close)
+                    self.remove_file_from_app(reference_to_close)
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
-                self.remove_file_from_app(file_reference_to_close)
+                self.remove_file_from_app(reference_to_close)
 
     def remove_file_from_app(self, file_reference):
         """Removes the file reference from the app.
