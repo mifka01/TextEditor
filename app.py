@@ -264,14 +264,7 @@ class TextEditor(tk.Frame):
         # If the user is closing the current tab
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
-<<<<<<< HEAD
-            file_reference = self.save_file()
-            self.text_field.delete('1.0', tk.END)
-            if file_reference is not None:
-                self.remove_file_from_app(file_reference)
-            else:
-                self.remove_file_from_app(file_reference_to_close)
-=======
+
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 text = f.read().strip()
 
@@ -279,11 +272,14 @@ class TextEditor(tk.Frame):
                 file_reference = self.save_file()
                 self.text_field.delete('1.0', tk.END)
 
-                self.remove_file_from_app(file_reference)
+                if file_reference is not None:
+                    self.remove_file_from_app(file_reference)
+                else:
+                    self.remove_file_from_app(file_reference_to_close)
             else:
+                # If there is no text, then there is no point keeping it
                 os.remove(file_reference['file'].name)
                 self.remove_file_from_app(file_reference)
->>>>>>> Ramidek
 
             if self.files_in_tab != []:
                 # Open a random file
@@ -298,23 +294,25 @@ class TextEditor(tk.Frame):
 
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
-                    if f.read().strip() != "":  # If there is text
-                        # Go to that file and ask if the user wants to save
-                        f.close()
-                        self.switch_tabs(f)
-                        new_file = self.save_new_file()
+                    text = f.read().strip()
 
-                        if new_file is not None:
-                            self.remove_file_from_app(new_file)
-                        else:
-                            self.remove_file_from_app(file_to_close)
+                if text != "":  # If there is text
+                    # Go to that file and ask if the user wants to save
+                    self.switch_tabs(f)
+                    new_file = self.save_new_file()
 
-                        # Go back to the original file once that is closed
-                        self.switch_tabs(original_file_tab)
-                    else:  # If the untitled file is empty
-                        f.close()
-                        os.remove(file_to_close.name)
+                    if new_file is not None:
+                        self.remove_file_from_app(new_file)
+                    else:
+                        os.remove(file_to_close.name)  # Since it is a temp
                         self.remove_file_from_app(file_reference_to_close)
+
+                    # Go back to the original file once that is closed
+                    self.current_file = None
+                    self.switch_tabs(original_file_tab)
+                else:  # If the untitled file is empty
+                    os.remove(file_to_close.name)
+                    self.remove_file_from_app(file_reference_to_close)
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
                 self.remove_file_from_app(file_reference_to_close)
