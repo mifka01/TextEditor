@@ -242,8 +242,10 @@ class TextEditor(tk.Frame):
             # Save the file (if the user wants to)
             file_reference = self.save_file()
             self.text_field.delete('1.0', tk.END)
-
-            self.remove_file_from_app(file_reference)
+            if file_reference is not None:
+                self.remove_file_from_app(file_reference)
+            else:
+                self.remove_file_from_app(file_reference_to_close)
 
             if self.files_in_tab != []:
                 # Open a random file
