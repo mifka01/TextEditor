@@ -31,7 +31,7 @@ class TextEditor(tk.Frame):
 
         # Configuring styles
         style = ThemedStyle(master)
-     
+
         style.set_theme("default")
 
         style.configure(
@@ -56,7 +56,7 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'Current.File.TButton',
-            background=FOREGROUND_COLOR,        
+            background=FOREGROUND_COLOR,
             foreground=BACKGROUND_COLOR
         )
 
@@ -127,17 +127,17 @@ class TextEditor(tk.Frame):
     def prompt_to_open_file(self):
         """Prompt the user to open a file.
 
-       This function removes the text field completely.
-       """
+        This function removes the text field completely.
+        """
         self.text_field.delete("1.0", tk.END)
         self.text_field.pack_forget()
 
     def open_file(self):
         """Allows user to open a file.
 
-       If the the file is already in the tab,
-       the file will not be opened again.
-       """
+        If the the file is already in the tab,
+        the file will not be opened again.
+        """
         file_to_open = filedialog.askopenfile(
             parent=self.master,
             mode='r+'
@@ -160,12 +160,11 @@ class TextEditor(tk.Frame):
     def new_file(self):
         """Allows user to create a new file.
 
-       It is automatically added to the system and
-       opened in the text editor upon creation.
+        It is automatically added to the system and
+        opened in the text editor upon creation.
 
-       It is saved in the TextEditor file directory as of now.
-       """
-
+        It is saved in the TextEditor file directory as of now.
+        """
         with open(
             "Untitled-" + str(self.files_count) + ".txt",
             "w+",
@@ -183,9 +182,9 @@ class TextEditor(tk.Frame):
     def hideButton(self, button):
         """Hides the the tab button to access a particular file.
 
-       Key arguments:
-       button -- FileButton
-       """
+        Key arguments:
+        button -- FileButton
+        """
         button.pack_forget()
 
     def save_file(self, permanent=True):
@@ -243,7 +242,7 @@ class TextEditor(tk.Frame):
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
-                
+
                 return(new_file_reference)
         else:
             return None
@@ -284,7 +283,7 @@ class TextEditor(tk.Frame):
         else:
             file_to_close = file_reference_to_close["file"]
             original_file_tab = self.current_file
- 
+
             if file_to_close.name[0:8] == "Untitled":  # If not saved
                 with open(file_to_close.name, "r+", encoding="utf-8") as f:
                     if f.read().strip() != "":  # If there is text
@@ -292,12 +291,12 @@ class TextEditor(tk.Frame):
                         f.close()
                         self.switch_tabs(f)
                         new_file = self.save_new_file()
- 
+
                         if new_file is not None:
                             self.remove_file_from_app(new_file)
                         else:
                             self.remove_file_from_app(file_to_close)
- 
+
                         # Go back to the original file once that is closed
                         self.switch_tabs(original_file_tab)
                     else:  # If the untitled file is empty
@@ -307,7 +306,7 @@ class TextEditor(tk.Frame):
             else:  # If it is not called 'Untitled'
                 # It is automatically saved since it is saved from tab out
                 self.remove_file_from_app(file_reference_to_close)
- 
+
     def remove_file_from_app(self, file_reference):
         """Removes the file reference from the app.
 
@@ -321,13 +320,13 @@ class TextEditor(tk.Frame):
         file_reference["tab"].pack_forget()
 
         self.files_in_tab.remove(file_reference)
- 
+
     def focus_tabs(self, focused_raw_file):
         """Focus the tabs to show which one is in use.
- 
-       Key argument:
-       focused_raw_file
-       """
+
+        Key argument:
+        focused_raw_file
+        """
         for file_reference in self.files_in_tab:
             if (self.current_file is not None and
                     file_reference["file"] == self.current_file):
@@ -359,12 +358,12 @@ class TextEditor(tk.Frame):
     def display_text(self, new_raw_file):
         """Displays text on the text editor based on the file in use.
 
-       Key argument:
-       -- new_raw_file
-       """
+        Key argument:
+        -- new_raw_file
+        """
         # Refresh the editor
         self.text_field.delete('1.0', tk.END)
-       
+
         # Replace the editor with the new file's text
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
