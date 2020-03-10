@@ -203,7 +203,7 @@ class TextEditor(tk.Frame):
 
         if self.current_file is not None:
             if permanent and self.current_file.name[0:8] == "Untitled":
-                
+
                 return self.save_new_file()
             else:
                 with open(self.current_file.name, 'r+', encoding='utf-8') as f:
@@ -250,7 +250,7 @@ class TextEditor(tk.Frame):
                 # Move from the old file to the new
                 self.current_file = None
                 self.switch_tabs(f)
-                
+
                 return(new_file_reference)
         else:
             return None
@@ -273,11 +273,11 @@ class TextEditor(tk.Frame):
         # If the user is closing the current tab
         if self.current_file == reference_to_close["file"]:
             # Save the file (if the user wants to)
-               
+
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 text = f.read().strip()
             if text != "":  # If there is text
-                
+
                 new_file_reference = self.save_file()
                 self.text_field.delete('1.0', tk.END)
 
@@ -371,7 +371,6 @@ class TextEditor(tk.Frame):
             if self.current_file is not None and len(self.files_in_tab) != 1:
                 # Changes to unsaved file are temporary
                 self.save_file(False)
-
             self.current_file = tab_file
             self.display_text(tab_file)
 
@@ -413,17 +412,16 @@ class TextEditor(tk.Frame):
                     return
 
                 file_to_open = self.files_in_tab[index - 1]["file"]
-                self.switch_tabs(file_to_open)
+        self.switch_tabs(file_to_open)
 
     def right_file(self, event):
         for index, file_reference in enumerate(self.files_in_tab):
             if file_reference["file"] == self.current_file:
-                # If the user is already at the right-most tab
-                if index + 1 > len(self.files_in_tab) - 1:
+                if index + 1 > len(self.files_in_tab)-1:
+                    # If the user is already at the right-most tab  
                     return
-
                 file_to_open = self.files_in_tab[index + 1]["file"]
-                self.switch_tabs(file_to_open)
+        self.switch_tabs(file_to_open)
 
 
 class FileButton(ttk.Button):
