@@ -156,6 +156,8 @@ class TextEditor(tk.Frame):
             }
             self.files_in_tab.append(file_reference)
             self.switch_tabs(file_to_open)  # Open that file
+        else:
+            pass
 
     def new_file(self):
         """Allows user to create a new file.
@@ -224,7 +226,6 @@ class TextEditor(tk.Frame):
         # If the user did not click cancel
         if file_to_save is not None:
             with open(file_to_save.name, "r+", encoding="utf-8") as f:
-                print("here")
                 os.remove(self.current_file.name)
                 for index, file_reference in enumerate(self.files_in_tab):
                     if file_reference["file"].name == self.current_file.name:
@@ -367,7 +368,6 @@ class TextEditor(tk.Frame):
         # Replace the editor with the new file's text
         with open(new_raw_file.name, "r+", encoding="utf-8") as f:
             text = f.read()
-            print(text)
         self.text_field.insert('1.0', text)
         f.close()
 
