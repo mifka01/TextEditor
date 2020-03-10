@@ -265,16 +265,16 @@ class TextEditor(tk.Frame):
         if self.current_file == raw_file:
             # Save the file (if the user wants to)
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
-                if f.read().strip() != "":
-                    f.close()
-                    file_reference = self.save_file()
-                    self.text_field.delete('1.0', tk.END)
+                text = f.read().strip()
 
-                    self.remove_file_from_app(file_reference)
-                else:
-                    f.close()
-                    os.remove(file_reference['file'].name)
-                    self.remove_file_from_app(file_reference)
+            if text != "":  # If there is text
+                file_reference = self.save_file()
+                self.text_field.delete('1.0', tk.END)
+
+                self.remove_file_from_app(file_reference)
+            else:
+                os.remove(file_reference['file'].name)
+                self.remove_file_from_app(file_reference)
 
             if self.files_in_tab != []:
                 # Open a random file
@@ -385,8 +385,7 @@ class TextEditor(tk.Frame):
     def ctrlQ(self, event):
         """Quit the application."""
         while self.files_in_tab != []:
-            if self.files_in_tab[0]["file"].name[0:8] == "Untitled":
-                self.close_file(self.files_in_tab[0]['file'])
+            self.close_file(self.files_in_tab[0]['file'])
 
         root.quit()
 
