@@ -134,8 +134,7 @@ class TextEditor(tk.Frame):
 
     def open_file(self):
         """Allows user to open a file.
-
-        If the the file is already in the tab,
+            If the the file is already in the tab,
         the user will be refered to that existing file instead.
         """
         file_to_open = filedialog.askopenfile(
@@ -153,8 +152,7 @@ class TextEditor(tk.Frame):
                 self.switch_tabs(file_reference["file"])
                 return
 
-<<<<<<< HEAD
-        if file_to_open is not None and entry:
+        if file_to_open is not None:
             file_reference = {
                 "file": file_to_open,
                 "tab": FileButton(self, file_to_open)
@@ -163,14 +161,6 @@ class TextEditor(tk.Frame):
             self.switch_tabs(file_to_open)  # Open that file
         else:
             pass
-=======
-        file_reference = {
-            "file": file_to_open,
-            "tab": FileButton(self, file_to_open)
-        }
-        self.files_in_tab.append(file_reference)
-        self.switch_tabs(file_to_open)  # Open that file
->>>>>>> ec053089827a13ae47a10b760c288765ea38faee
 
     def new_file(self):
         """Allows user to create a new file.
