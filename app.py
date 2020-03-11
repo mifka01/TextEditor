@@ -272,12 +272,16 @@ class TextEditor(tk.Frame):
 
         # If the user is closing the current tab
         if self.current_file == reference_to_close["file"]:
+            # If the user open just one file, type and close
+            #  we need to save it before closing
+            with open(self.current_file.name, "r+", encoding="utf-8") as f:
+                f.write(self.text_field.get('1.0', tk.END).strip())
+            
             # Save the file (if the user wants to)
-
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 text = f.read().strip()
             if text != "":  # If there is text
-
+                
                 new_file_reference = self.save_file()
                 self.text_field.delete('1.0', tk.END)
 
@@ -418,7 +422,7 @@ class TextEditor(tk.Frame):
         for index, file_reference in enumerate(self.files_in_tab):
             if file_reference["file"] == self.current_file:
                 if index + 1 > len(self.files_in_tab)-1:
-                    # If the user is already at the right-most tab  
+                    # If the user is already at the right-most tab
                     return
                 file_to_open = self.files_in_tab[index + 1]["file"]
         self.switch_tabs(file_to_open)
