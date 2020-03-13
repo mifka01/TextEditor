@@ -276,18 +276,19 @@ class TextEditor(tk.Frame):
             #  we need to save it before closing
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 f.write(self.text_field.get('1.0', tk.END).strip())
-            
+
             # Save the file (if the user wants to)
             with open(self.current_file.name, "r+", encoding="utf-8") as f:
                 text = f.read().strip()
             if text != "":  # If there is text
-                
+
                 new_file_reference = self.save_file()
                 self.text_field.delete('1.0', tk.END)
 
                 if new_file_reference is not None:
                     self.remove_file_from_app(new_file_reference)
                 else:
+                    os.remove(reference_to_close['file'].name)                
                     self.remove_file_from_app(reference_to_close)
             else:
                 # If there is no text, then there is no point keeping it
@@ -316,7 +317,7 @@ class TextEditor(tk.Frame):
                     new_file_reference = self.save_new_file()
 
                     if new_file_reference is not None:
-                        self.remove_file_from_app(new_file_reference)
+                        self.remove_file_from_app(new_file_reference)                  
                     else:
                         os.remove(file_to_close.name)  # Since it is a temp
                         self.remove_file_from_app(reference_to_close)
