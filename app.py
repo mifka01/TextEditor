@@ -6,10 +6,6 @@ from random import choice
 from platform import system as platform
 
 
-# Colors
-FOREGROUND_COLOR = "#282828"
-BACKGROUND_COLOR = "white"
-
 # Fonts
 BUTTON_FONT = ('Microsoft Sans Serif', 10)
 # TITLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
@@ -20,27 +16,36 @@ class TextEditor(tk.Frame):
     files_in_tab = []
     current_file = None
     files_count = 0
+    foreground_color = "#282828"
+    background_color = "white"
 
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
         self.pack()
+        self.styling()
         self.create_widgets()
 
         self.prompt_to_open_file()  # Tells user to open something
 
         # Configuring styles
-        style = ThemedStyle(master)
+
+    def styling(self):
+        style = ThemedStyle(self.master)
 
         style.set_theme("default")
 
         style.configure(
             'TButton',
-            foreground=FOREGROUND_COLOR,
-            background=BACKGROUND_COLOR,
+            foreground=self.foreground_color,
+            background=self.background_color,
             borderwidth=0,
             highlightthickness=0,
             font=('MS Reference Sans Serif', 15)
+        )
+        style.configure(
+            'Color.TButton',
+            font=('MS Reference Sans Serif', 12)
         )
 
         style.configure(
@@ -56,22 +61,22 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'Current.File.TButton',
-            background=FOREGROUND_COLOR,
-            foreground=BACKGROUND_COLOR
+            background=self.foreground_color,
+            foreground=self.background_color
         )
 
     def create_widgets(self):
         """Createst the widgets needed for the application."""
         # Initialize text_frame
         self.text_frame = tk.Frame(self.master)
-        self.text_frame['bg'] = BACKGROUND_COLOR
+        self.text_frame['bg'] = self.background_color
         self.text_frame['highlightthickness'] = "0"
         self.text_frame.place(relx=0, rely=0.05, relwidth=1, relheight=1)
         self.initialize_text_field()
 
         # Initialize button_frame
         self.button_frame = tk.Frame(self.master)
-        self.button_frame['bg'] = BACKGROUND_COLOR
+        self.button_frame['bg'] = self.background_color
         self.button_frame['highlightthickness'] = "0"
         self.button_frame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
 
@@ -84,6 +89,16 @@ class TextEditor(tk.Frame):
         )
         self.plus_button.pack(side=tk.LEFT)
         self.plus_button.config(width=3)
+
+        # Initialize color_mode_button
+        color_mode_button = ttk.Button(
+            self.button_frame,
+            style="Color.TButton",
+            text="⚫",
+            command=self.color_mode
+        )
+        color_mode_button.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
+        color_mode_button.config(width=3)
 
         # Initialize open_button
         open_button = ttk.Button(
@@ -109,11 +124,12 @@ class TextEditor(tk.Frame):
         """Initialize the text field."""
         self.text_field = tk.Text(self.text_frame)
         self.text_field['border'] = '0'
-        self.text_field['fg'] = FOREGROUND_COLOR
+        self.text_field['fg'] = self.foreground_color
+        self.text_field['bg'] = self.background_color
         self.text_field['font'] = TEXT_FONT
         self.text_field['wrap'] = tk.WORD
-        self.text_field['insertbackground'] = FOREGROUND_COLOR
-        self.text_field['selectbackground'] = FOREGROUND_COLOR
+        self.text_field['insertbackground'] = self.foreground_color
+        self.text_field['selectbackground'] = self.foreground_color
         self.text_field['selectborderwidth'] = "20px"
         self.text_field['state'] = 'normal'
         self.text_field['padx'] = '60'
@@ -288,7 +304,7 @@ class TextEditor(tk.Frame):
                 if new_file_reference is not None:
                     self.remove_file_from_app(new_file_reference)
                 else:
-                    os.remove(reference_to_close['file'].name)                
+                    os.remove(reference_to_close['file'].name)
                     self.remove_file_from_app(reference_to_close)
             else:
                 # If there is no text, then there is no point keeping it
@@ -317,7 +333,7 @@ class TextEditor(tk.Frame):
                     new_file_reference = self.save_new_file()
 
                     if new_file_reference is not None:
-                        self.remove_file_from_app(new_file_reference)                  
+                        self.remove_file_from_app(new_file_reference)
                     else:
                         os.remove(file_to_close.name)  # Since it is a temp
                         self.remove_file_from_app(reference_to_close)
@@ -428,6 +444,28 @@ class TextEditor(tk.Frame):
                 file_to_open = self.files_in_tab[index + 1]["file"]
         self.switch_tabs(file_to_open)
 
+    def color_mode(self):
+        if self.background_color == "white":
+            self.background_color = "#282828"
+            self.foreground_color = "white"
+            self.styling()
+            self.text_field['bg'] = self.background_color
+            self.text_field['fg'] = self.foreground_color
+            self.text_field['insertbackground'] = self.foreground_color
+            self.text_field['selectbackground'] = "#101010"
+            self.button_frame['bg'] = self.background_color
+            self.text_frame['bg'] = self.background_color
+        else:
+            self.background_color = "white"
+            self.foreground_color = "#282828"
+            self.styling()
+            self.text_field['bg'] = self.background_color
+            self.text_field['fg'] = self.foreground_color
+            self.text_field['insertbackground'] = self.foreground_color
+            self.text_field['selectbackground'] = self.foreground_color
+            self.button_frame['bg'] = self.background_color
+            self.text_frame['bg'] = self.background_color
+
 
 class FileButton(ttk.Button):
     def __init__(self, app, raw_file):
@@ -448,7 +486,6 @@ class FileButton(ttk.Button):
 
 
 root = tk.Tk()
-root['bg'] = BACKGROUND_COLOR
 text_editor = TextEditor(master=root)
 
 # Window settings
