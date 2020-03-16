@@ -399,6 +399,7 @@ class TextEditor(tk.Frame):
                 if new_file_reference is not None:
                     self.remove_file_from_app(new_file_reference)
                 else:
+                    os.remove(reference_to_close['file'].name)                
                     self.remove_file_from_app(reference_to_close)
             else:
                 # If there is no text, then there is no point keeping it
@@ -422,7 +423,7 @@ class TextEditor(tk.Frame):
                     new_file_reference = self.save_new_file()
 
                     if new_file_reference is not None:
-                        self.remove_file_from_app(new_file_reference)
+                        self.remove_file_from_app(new_file_reference)                  
                     else:
                         self.remove_file_from_app(reference_to_close, True)
 

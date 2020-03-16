@@ -114,7 +114,9 @@ def saveManual():
         else:
             f = open(f"{files[buttonIndex].name}", 'r+', encoding='utf-8')
             f.write(textField.get("1.0", tk.END).strip())
+            f.truncate()
             f.close()
+            
     else:
         pass
 
