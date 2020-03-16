@@ -206,10 +206,7 @@ class TextEditor(tk.Frame):
                 self.switch_tabs(file_reference)
                 return file_reference
 
-        file_reference = {
-            "file": file_to_open,
-            "tab": FileButton(self, file_to_open)
-        }
+        file_reference = self.create_file_reference(file_to_open)
         self.files_in_tab.append(file_reference)
         self.switch_tabs(file_reference)  # Open that file
 
@@ -279,6 +276,7 @@ class TextEditor(tk.Frame):
             else:
                 with open(file_ref["file"].name, 'r+', encoding='utf-8') as f:
                     current_text = self.text_field.get("1.0", tk.END).strip()
+                    f.truncate()
                     f.write(current_text)
 
                 return file_ref
@@ -399,8 +397,7 @@ class TextEditor(tk.Frame):
                 if new_file_reference is not None:
                     self.remove_file_from_app(new_file_reference)
                 else:
-                    os.remove(reference_to_close['file'].name)                
-                    self.remove_file_from_app(reference_to_close)
+                    self.remove_file_from_app(reference_to_close, True)
             else:
                 # If there is no text, then there is no point keeping it
                 self.current_file_ref = None
@@ -423,7 +420,7 @@ class TextEditor(tk.Frame):
                     new_file_reference = self.save_new_file()
 
                     if new_file_reference is not None:
-                        self.remove_file_from_app(new_file_reference)                  
+                        self.remove_file_from_app(new_file_reference)
                     else:
                         self.remove_file_from_app(reference_to_close, True)
 
