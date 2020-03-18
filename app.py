@@ -523,7 +523,7 @@ class TextEditor(tk.Frame):
                     return
 
                 file_ref_to_open = self.files_in_tab[index - 1]
-                self.switch_tabs(file_ref_to_open)
+        self.switch_tabs(file_ref_to_open)
 
     def right_file(self, event):
         for index, file_reference in enumerate(self.files_in_tab):
@@ -533,7 +533,7 @@ class TextEditor(tk.Frame):
                     return
 
                 file_ref_to_open = self.files_in_tab[index + 1]
-                self.switch_tabs(file_ref_to_open)
+        self.switch_tabs(file_ref_to_open)
 
 
 class FileButton(ttk.Button):
