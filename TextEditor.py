@@ -604,7 +604,8 @@ class TextEditor(tk.Frame):
                     return
 
                 file_ref_to_open = self.files_in_tab[index - 1]
-                self.switch_tabs(file_ref_to_open)
+
+        self.switch_tabs(file_ref_to_open)
 
     def right_file(self, event):
         """Switch to the text on the right file's tab when called.
@@ -625,4 +626,5 @@ class TextEditor(tk.Frame):
                     return
 
                 file_ref_to_open = self.files_in_tab[index + 1]
-                self.switch_tabs(file_ref_to_open)
+
+        self.switch_tabs(file_ref_to_open)
