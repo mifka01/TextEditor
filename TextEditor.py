@@ -6,16 +6,6 @@ from random import choice
 from FileButton import FileButton
 
 
-# Colors
-FOREGROUND_COLOR = "#282828"
-BACKGROUND_COLOR = "white"
-
-# Fonts
-BUTTON_FONT = ('Microsoft Sans Serif', 10)
-# TITLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
-TEXT_FONT = ('Microsoft Sans Serif', 14)
-
-
 class TextEditor(tk.Frame):
     """Application instance.
 
@@ -57,7 +47,24 @@ class TextEditor(tk.Frame):
     current_file_ref = None
     untitled_count = 0
 
+    # Colors
+    FOREGROUND_COLOR = "#282828"
+    BACKGROUND_COLOR = "white"
+
+    # Fonts
+    BUTTON_FONT = ('Microsoft Sans Serif', 10)
+    # TITLE_FONT = tk_font(family='Georgia', size=30, weight="bold")
+    TEXT_FONT = ('Microsoft Sans Serif', 14)
+
     def __init__(self, master=None):
+        """Initialize the app instance.
+
+        Parameter
+        ---------
+        master : tkinter.Tk()
+            The toplevel widget of Tk.
+
+        """
         super().__init__(master)
         self.master = master
         self.pack()
@@ -65,6 +72,7 @@ class TextEditor(tk.Frame):
         self.prompt_to_open_file()  # Tells user to open something
 
     def initialize_user_interface(self):
+        """Create the widgets and configure the styles."""
         self.create_widgets()
         self.configure_styles()
 
@@ -75,8 +83,8 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'TButton',
-            foreground=FOREGROUND_COLOR,
-            background=BACKGROUND_COLOR,
+            foreground=self.FOREGROUND_COLOR,
+            background=self.BACKGROUND_COLOR,
             borderwidth=0,
             highlightthickness=0,
             font=('MS Reference Sans Serif', 15)
@@ -90,27 +98,27 @@ class TextEditor(tk.Frame):
 
         style.configure(
             'File.TButton',
-            font=BUTTON_FONT
+            font=self.BUTTON_FONT
         )
 
         style.configure(
             'Current.File.TButton',
-            background=FOREGROUND_COLOR,
-            foreground=BACKGROUND_COLOR
+            background=self.FOREGROUND_COLOR,
+            foreground=self.BACKGROUND_COLOR
         )
 
     def create_widgets(self):
         """Createst the widgets needed for the application."""
         # Initialize text_frame
         self.text_frame = tk.Frame(self.master)
-        self.text_frame['bg'] = BACKGROUND_COLOR
+        self.text_frame['bg'] = self.BACKGROUND_COLOR
         self.text_frame['highlightthickness'] = "0"
         self.text_frame.place(relx=0, rely=0.05, relwidth=1, relheight=1)
         self.initialize_text_field()
 
         # Initialize button_frame
         self.button_frame = tk.Frame(self.master)
-        self.button_frame['bg'] = BACKGROUND_COLOR
+        self.button_frame['bg'] = self.BACKGROUND_COLOR
         self.button_frame['highlightthickness'] = "0"
         self.button_frame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
 
@@ -148,11 +156,11 @@ class TextEditor(tk.Frame):
         """Initialize the text field."""
         self.text_field = tk.Text(self.text_frame)
         self.text_field['border'] = '0'
-        self.text_field['fg'] = FOREGROUND_COLOR
-        self.text_field['font'] = TEXT_FONT
+        self.text_field['fg'] = self.FOREGROUND_COLOR
+        self.text_field['font'] = self.TEXT_FONT
         self.text_field['wrap'] = tk.WORD
-        self.text_field['insertbackground'] = FOREGROUND_COLOR
-        self.text_field['selectbackground'] = FOREGROUND_COLOR
+        self.text_field['insertbackground'] = self.FOREGROUND_COLOR
+        self.text_field['selectbackground'] = self.FOREGROUND_COLOR
         self.text_field['selectborderwidth'] = "20px"
         self.text_field['state'] = 'normal'
         self.text_field['padx'] = '60'
@@ -164,7 +172,7 @@ class TextEditor(tk.Frame):
         # self.text_field.bind("<Control-d>", textReset)
 
     def prompt_to_open_file(self):
-        """Remove the text field until a file is added."""
+        """Removes the text field."""
         self.text_field.delete("1.0", tk.END)
         self.text_field.pack_forget()
 
@@ -211,16 +219,16 @@ class TextEditor(tk.Frame):
         return file_reference
 
     def new_file(self, filename=None, open_instantly=True):
-        """Allows user to create a new file.
+        """Adds a temporary or permanent file to the app.
 
-        It is automatically added to the system and
-        opened in the text editor upon creation.
-
+        Note
+        ----
         It is saved in the TextEditor file directory as of now.
 
         Parameter
         ---------
         filename : str, optional
+            If left blank, a temporary untitled file will be created.
 
         Returns
         -------
@@ -241,7 +249,7 @@ class TextEditor(tk.Frame):
         return file_ref
 
     def save_new_file(self):
-        """Transfer untitled file's content into a new file.
+        """Transfer the temporary file's content into a new permanent file.
 
         The function transfers the information into a new file with a new name,
         deleting the old file's existence in the system and
@@ -280,7 +288,7 @@ class TextEditor(tk.Frame):
         return new_file_ref
 
     def hideButton(self, button):
-        """Hides the the tab button to access a particular file.
+        """Forgets the tab button's pack.
 
         Parameters
         ----------
@@ -297,17 +305,22 @@ class TextEditor(tk.Frame):
         If permanent is set to False, all untitled files will be saved
         as temporary files.
 
+        Note
+        ----
+        The user must be on the tab that is going to be saved.
+
         Parameters
         ----------
         permanent : bool
-            Directed towards unsnaved files.
+            Directed towards unsaved files.
         file_ref : dict ({"file": x, "tab": y})
 
         Returns
         -------
         file_ref : dict ({"file": x, "tab": y})
-            The file reference that was recently saved,
-            or the file reference that the user did not want to save.
+            The file reference that was recently saved.
+        None
+            If the user clicks cancel.
 
         See also
         --------
@@ -315,15 +328,10 @@ class TextEditor(tk.Frame):
 
         """
         file_ref = self.current_file_ref
-        is_temp_save = permanent and file_ref["file"].name[0:8] == "Untitled"
-        if is_temp_save:
-            self.switch_tabs(file_ref)
+        is_perm_save = permanent and file_ref["file"].name[0:8] == "Untitled"
+        if is_perm_save:
             new_file_ref = self.save_new_file()
-
-            if new_file_ref is not None:
-                return new_file_ref
-
-            return None
+            return new_file_ref
         else:
             self.write_to_file(file_ref)
             return file_ref
@@ -351,7 +359,7 @@ class TextEditor(tk.Frame):
             return False
 
         # To ensure that the function is checking on the most updated version
-        if self.current_file_ref == file_reference:
+        if self.is_current_file(file_reference):
             self.save_file(permanent=False)
 
         file_to_check = file_reference["file"]
@@ -363,12 +371,12 @@ class TextEditor(tk.Frame):
         else:
             return False
 
-    def find_file_reference(self, filename):
+    def find_file_reference(self, raw_file):
         """Iterates through the `files_in_tab` list to find it.
 
         Parameter
         ---------
-        filename : str
+        raw_file : IO
 
         Returns
         -------
@@ -378,7 +386,7 @@ class TextEditor(tk.Frame):
             If not found.
         """
         for file_reference in self.files_in_tab:
-            if file_reference["file"] == filename:
+            if file_reference["file"] == raw_file:
                 return file_reference
 
         return None
@@ -403,34 +411,50 @@ class TextEditor(tk.Frame):
         else:
             self.save_and_quit(ref_to_close)
 
-        if self.current_file_ref == ref_to_close:
-            self.random_open()
+        if self.files_in_tab != []:
+            if self.is_current_file(ref_to_close):
+                self.random_open()
+        else:
+            self.prompt_to_open_file()
 
     def save_and_quit(self, ref_to_close):
+        """Updates the file's content and close the file.
+
+        It switches to the tab of the file if it is not the
+        current tab.
+
+        Parameter
+        ---------
+        ref_to_close : dict ({"file": x, "tab": y})
+
+        """
         current = False
-        if self.current_file_ref == ref_to_close:
+        if self.is_current_file(ref_to_close):
             current = True
 
         original_tab = self.current_file_ref
 
         self.switch_tabs(ref_to_close)
         close_saved = self.save_file()
-        if close_saved is not None:
+        if close_saved is not None:  # If user wants to save
             self.remove_file_from_app(close_saved)
-        else:
+        else:  # If the user clicks cancel
             self.remove_file_from_app(ref_to_close, os_remove=True)
 
-        if current:
-            return
-        else:
+        # If the user came from a different tab before, switch back to it
+        if not current:
             self.switch_tabs(original_tab)
 
     def random_open(self):
-        if self.files_in_tab != []:
-            random_file_reference = choice(self.files_in_tab)
-            self.switch_tabs(random_file_reference)
-        else:
-            self.prompt_to_open_file()
+        """Opens a file in `files_in_tab`.
+
+        Note
+        ----
+        There needs to be at least one element in `files_in_tab`.
+
+        """
+        random_file_reference = choice(self.files_in_tab)
+        self.switch_tabs(random_file_reference)
 
     def add_file_to_app(self, raw_file):
         """Creates file reference and appends it to `files_in_tab`.
@@ -443,6 +467,7 @@ class TextEditor(tk.Frame):
         -------
         file_ref : dict ({"file": x, "tab": y})
             The one that was created.
+
         """
         file_ref = self.create_file_reference(raw_file)
         self.files_in_tab.append(file_ref)
@@ -452,13 +477,13 @@ class TextEditor(tk.Frame):
     def remove_file_from_app(self, file_reference, os_remove=False):
         """Removes the file tab and as well as the file reference.
 
+        The FileButton tk.Button object disappears from the tab bar,
+        and the dict is removed from the `files_in_tab` attribute.
+
         Parameters
         ----------
         file_reference: dict ({"file": x, "tab": y})
         os_remove : bool, optional
-
-        The FileButton tk.Button object disappears from the tab bar,
-        and the dict is removed from the `files_in_tab` attribute.
 
         """
         if file_reference is None:
@@ -470,11 +495,11 @@ class TextEditor(tk.Frame):
         if os_remove:
             os.remove(file_reference["file"].name)
 
-        if file_reference == self.current_file_ref:
+        if self.is_current_file(file_reference):
             self.current_file_ref = None
 
     def focus_tabs(self, focused_raw_file):
-        """Focus the tabs to show which one is in use.
+        """Reconfigure the styles of the tabs to show which is in use.
 
         Parameter
         ---------
@@ -500,20 +525,25 @@ class TextEditor(tk.Frame):
         return False
 
     def switch_tabs(self, tab_file_ref):
+        """Save current text and change it to the new file's.
+
+        Parameter
+        ---------
+        tab_file_ref : dict ({"file": x, "tab": y})
+
+        """
         if type(tab_file_ref) is not dict:
             tab_file_ref = self.find_file_reference(tab_file_ref)
 
         self.text_field.pack(fill=tk.BOTH, expand=True)  # User needs to type
 
-        if tab_file_ref == self.current_file_ref:
-            pass
-        else:
+        if not self.is_current_file(tab_file_ref):
             # Reconfigure colors to show the current file in use
             self.focus_tabs(tab_file_ref["file"])
 
+            # Temporarily save untitled files
             if self.current_file_ref is not None:
-                # Changes to unsaved file are temporary
-                self.save_file(False)
+                self.save_file(permanent=False)
 
             self.current_file_ref = tab_file_ref
             self.display_text(tab_file_ref["file"])
@@ -521,8 +551,10 @@ class TextEditor(tk.Frame):
     def display_text(self, new_raw_file):
         """Displays text on the text editor based on the file in use.
 
-        Key argument:
-        -- new_raw_file
+        Parameter
+        ---------
+        new_raw_file : IO
+
         """
         # Refresh the editor
         self.text_field.delete('1.0', tk.END)
@@ -542,15 +574,32 @@ class TextEditor(tk.Frame):
         self.new_file()
 
     def ctrlQ(self, event):
-        """Closes all tabs and files and quit the app."""
+        """Closes all tabs and files and quit the app.
+
+        See also
+        --------
+        close_file : saves and quit the file.
+
+        """
         while self.files_in_tab != []:
             self.close_file(self.files_in_tab[0]['file'])
 
         self.master.quit()
 
     def left_file(self, event):
+        """Switch to the text on the left file's tab when called.
+
+        Note
+        ----
+        It will stop when at left-most file tab.
+
+        See also
+        --------
+        right_file : The same but for the right.
+
+        """
         for index, file_reference in enumerate(self.files_in_tab):
-            if file_reference == self.current_file_ref:
+            if self.is_current_file(file_reference):
                 if index - 1 < 0:  # User is already at the left-most tab
                     return
 
@@ -558,8 +607,19 @@ class TextEditor(tk.Frame):
                 self.switch_tabs(file_ref_to_open)
 
     def right_file(self, event):
+        """Switch to the text on the right file's tab when called.
+
+        Note
+        ----
+        It will stop when at right-most file tab.
+
+        See also
+        --------
+        left_file : The same but for the left.
+
+        """
         for index, file_reference in enumerate(self.files_in_tab):
-            if file_reference == self.current_file_ref:
+            if self.is_current_file(file_reference):
                 # If the user is already at the right-most tab
                 if index + 1 > len(self.files_in_tab) - 1:
                     return
