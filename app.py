@@ -267,12 +267,12 @@ class TextEditor(tk.Frame):
             initialfile="s_" + self.current_file_ref["file"].name
         )
 
-        # Delete the old untitled file
-        self.remove_file_from_app(self.current_file_ref, os_remove=True)
-
         # If the user click cancel
         if file_to_save is None:
             return None
+
+        # Delete the old untitled file
+        self.remove_file_from_app(self.current_file_ref, os_remove=True)
 
         # Create the new file and appending the text to it
         new_file_ref = self.new_file(file_to_save.name, open_instantly=False)
@@ -331,8 +331,8 @@ class TextEditor(tk.Frame):
 
                 if new_file_ref is not None:
                     return new_file_ref
-                else:
-                    return file_ref
+
+                return None
             else:
                 self.write_to_file(file_ref)
                 return file_ref
@@ -360,7 +360,8 @@ class TextEditor(tk.Frame):
             return False
 
         # To ensure that the function is checking on the most updated version
-        self.save_file(False, file_reference)
+        if self.current_file_ref == file_reference:
+            self.save_file(permanent=False, file_ref=file_reference)
 
         file_to_check = file_reference["file"]
         with open(file_to_check.name, "r+", encoding="utf-8") as f:
@@ -406,16 +407,16 @@ class TextEditor(tk.Frame):
         if type(ref_to_close) is not dict:
             ref_to_close = self.find_file_reference(ref_to_close)
 
-        if self.current_file_ref == ref_to_close:
-            current = True
-
         if self.check_untitled_empty(ref_to_close):
             self.remove_file_from_app(ref_to_close, os_remove=True)
         else:
-            ref_to_close = self.save_file(file_ref=ref_to_close)
-            self.remove_file_from_app(ref_to_close)
+            close_saved = self.save_file(file_ref=ref_to_close)
+            if close_saved is not None:
+                self.remove_file_from_app(close_saved)
+            else:
+                self.remove_file_from_app(ref_to_close, os_remove=True)
 
-        if not current:
+        if self.current_file_ref == ref_to_close:
             if self.files_in_tab != []:
                 # Open a random file
                 random_file_reference = choice(self.files_in_tab)
@@ -452,6 +453,9 @@ class TextEditor(tk.Frame):
         and the dict is removed from the `files_in_tab` attribute.
 
         """
+        if file_reference is None:
+            return
+
         file_reference["tab"].pack_forget()
         self.files_in_tab.remove(file_reference)
 
