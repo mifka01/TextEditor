@@ -248,45 +248,6 @@ class TextEditor(tk.Frame):
 
         return file_ref
 
-    def save_new_file(self):
-        """Transfer the temporary file's content into a new permanent file.
-
-        The function transfers the information into a new file with a new name,
-        deleting the old file's existence in the system and
-        replacing it with the file with the same information.
-
-        Note
-        ----
-        The user has to be on the tab of the file that needs to be saved,
-        since the functions works off the `current_file_ref` attribute.
-
-        Returns
-        -------
-        file reference : dict ({"file": x, "tab": y})
-            If user agreed to save.
-        None
-            If the user clicks no.
-
-        """
-        file_to_save = filedialog.asksaveasfile(
-            mode='w',
-            defaultextension=".txt",
-            initialfile="s_" + self.current_file_ref["file"].name
-        )
-
-        # If the user click cancel
-        if file_to_save is None:
-            return None
-
-        # Delete the old untitled file
-        self.remove_file_from_app(self.current_file_ref, os_remove=True)
-
-        # Create the new file and appending the text to it
-        new_file_ref = self.new_file(file_to_save.name, open_instantly=False)
-        self.write_to_file(new_file_ref)
-
-        return new_file_ref
-
     def hideButton(self, button):
         """Forgets the tab button's pack.
 
@@ -296,45 +257,6 @@ class TextEditor(tk.Frame):
 
         """
         button.pack_forget()
-
-    def save_file(self, permanent=True):
-        """Stores the text in the text field into the file.
-
-        If the file has not been saved before,
-        the function will be directed to save_new_file() instead.
-        If permanent is set to False, all untitled files will be saved
-        as temporary files.
-
-        Note
-        ----
-        The user must be on the tab that is going to be saved.
-
-        Parameters
-        ----------
-        permanent : bool
-            Directed towards unsaved files.
-        file_ref : dict ({"file": x, "tab": y})
-
-        Returns
-        -------
-        file_ref : dict ({"file": x, "tab": y})
-            The file reference that was recently saved.
-        None
-            If the user clicks cancel.
-
-        See also
-        --------
-        save_new_file : If the file had not been saved before.
-
-        """
-        file_ref = self.current_file_ref
-        is_perm_save = permanent and file_ref["file"].name[0:8] == "Untitled"
-        if is_perm_save:
-            new_file_ref = self.save_new_file()
-            return new_file_ref
-        else:
-            self.write_to_file(file_ref)
-            return file_ref
 
     def write_to_file(self, file_ref: dict):
         """Writes text field text into the file."""
@@ -628,3 +550,87 @@ class TextEditor(tk.Frame):
                 file_ref_to_open = self.files_in_tab[index + 1]
 
         self.switch_tabs(file_ref_to_open)
+
+
+class SaveManager:
+    def __init__(self):
+
+
+    def save_file(self, permanent=True):
+        """Stores the text in the text field into the file.
+
+        If the file has not been saved before,
+        the function will be directed to save_new_file() instead.
+        If permanent is set to False, all untitled files will be saved
+        as temporary files.
+
+        Note
+        ----
+        The user must be on the tab that is going to be saved.
+
+        Parameters
+        ----------
+        permanent : bool
+            Directed towards unsaved files.
+        file_ref : dict ({"file": x, "tab": y})
+
+        Returns
+        -------
+        file_ref : dict ({"file": x, "tab": y})
+            The file reference that was recently saved.
+        None
+            If the user clicks cancel.
+
+        See also
+        --------
+        save_new_file : If the file had not been saved before.
+
+        """
+        file_ref = self.current_file_ref
+        is_perm_save = permanent and file_ref["file"].name[0:8] == "Untitled"
+        if is_perm_save:
+            new_file_ref = self.save_new_file()
+            return new_file_ref
+        else:
+            self.write_to_file(file_ref)
+            return file_ref
+
+
+    def save_new_file(self):
+        """Transfer the temporary file's content into a new permanent file.
+
+        The function transfers the information into a new file with a new name,
+        deleting the old file's existence in the system and
+        replacing it with the file with the same information.
+
+        Note
+        ----
+        The user has to be on the tab of the file that needs to be saved,
+        since the functions works off the `current_file_ref` attribute.
+
+        Returns
+        -------
+        file reference : dict ({"file": x, "tab": y})
+            If user agreed to save.
+        None
+            If the user clicks no.
+
+        """
+        file_to_save = filedialog.asksaveasfile(
+            mode='w',
+            defaultextension=".txt",
+            initialfile="s_" + self.current_file_ref["file"].name
+        )
+
+        # If the user click cancel
+        if file_to_save is None:
+            return None
+
+        # Delete the old untitled file
+        self.remove_file_from_app(self.current_file_ref, os_remove=True)
+
+        # Create the new file and appending the text to it
+        new_file_ref = self.new_file(file_to_save.name, open_instantly=False)
+        self.write_to_file(new_file_ref)
+
+        return new_file_ref
