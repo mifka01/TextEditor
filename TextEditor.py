@@ -214,9 +214,9 @@ class TextEditor(tk.Frame):
                 return file_reference
 
         self.add_file_to_app(file_to_open)
-        self.switch_tabs(file_reference)  # Open that file
+        self.switch_tabs(file_to_open)  # Open that file
 
-        return file_reference
+        return file_to_open
 
     def new_file(self, filename=None, open_instantly=True):
         """Adds a temporary or permanent file to the app.
