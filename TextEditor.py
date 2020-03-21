@@ -212,7 +212,6 @@ class TextEditor(tk.Frame):
             if file_reference["file"].name == file_to_open.name:
                 self.switch_tabs(file_reference)
                 return file_reference
-
         self.add_file_to_app(file_to_open)
         self.switch_tabs(file_to_open)  # Open that file
 
@@ -284,6 +283,7 @@ class TextEditor(tk.Frame):
         # Create the new file and appending the text to it
         new_file_ref = self.new_file(file_to_save.name, open_instantly=False)
         self.write_to_file(new_file_ref)
+        self.switch_tabs(new_file_ref)  # We need to switch to created file
 
         return new_file_ref
 
@@ -471,7 +471,6 @@ class TextEditor(tk.Frame):
         """
         file_ref = self.create_file_reference(raw_file)
         self.files_in_tab.append(file_ref)
-
         return file_ref
 
     def remove_file_from_app(self, file_reference, os_remove=False):
