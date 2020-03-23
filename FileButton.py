@@ -17,5 +17,7 @@ class FileButton(ttk.Button):
         self.config(width=len(displayed_name))
         self.bind(
             '<Button-2>',  # Right click for Mac / Wheel click for Windows
-            lambda event: app.tab_manager.close_file(self.raw_file)
-        )
+
+            lambda event: app.tab_manager.close_file(self.raw_file))
+
+    
