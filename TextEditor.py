@@ -177,7 +177,6 @@ class TextEditor(tk.Frame):
         """
         button.pack_forget()
 
-
     def save_file(self, permanent=True):
         """Stores the text in the text field into the file.
 
@@ -298,45 +297,6 @@ class TextEditor(tk.Frame):
         else:
             self.prompt_to_open_file()
 
-    def save_and_quit(self, ref_to_close):
-        """Updates the file's content and close the file.
-
-        It switches to the tab of the file if it is not the
-        current tab.
-
-        Parameter
-        ---------
-        ref_to_close : dict ({"file": x, "tab": y})
-
-        """
-        current = False
-        if self.is_current_file(ref_to_close):
-            current = True
-
-        original_tab = self.current_file_ref
-
-        self.switch_tabs(ref_to_close)
-        close_saved = self.save_file()
-        if close_saved is not None:  # If user wants to save
-            self.remove_file_from_app(close_saved)
-        else:  # If the user clicks cancel
-            self.remove_file_from_app(ref_to_close, os_remove=True)
-
-        # If the user came from a different tab before, switch back to it
-        if not current:
-            self.switch_tabs(original_tab)
-
-    def random_open(self):
-        """Opens a file in `files_in_tab`.
-
-        Note
-        ----
-        There needs to be at least one element in `files_in_tab`.
-
-        """
-        random_file_reference = choice(self.files_in_tab)
-        self.switch_tabs(random_file_reference)
-
     def add_file_to_app(self, raw_file):
         """Creates file reference and appends it to `files_in_tab`.
 
@@ -353,30 +313,6 @@ class TextEditor(tk.Frame):
         file_ref = self.create_file_reference(raw_file)
         self.files_in_tab.append(file_ref)
         return file_ref
-
-    def remove_file_from_app(self, file_reference, os_remove=False):
-        """Removes the file tab and as well as the file reference.
-
-        The FileButton tk.Button object disappears from the tab bar,
-        and the dict is removed from the `files_in_tab` attribute.
-
-        Parameters
-        ----------
-        file_reference: dict ({"file": x, "tab": y})
-        os_remove : bool, optional
-
-        """
-        if file_reference is None:
-            return
-
-        file_reference["tab"].pack_forget()
-        self.files_in_tab.remove(file_reference)
-
-        if os_remove:
-            os.remove(file_reference["file"].name)
-
-        if self.is_current_file(file_reference):
-            self.current_file_ref = None
 
     def focus_tabs(self, focused_raw_file):
         """Reconfigure the styles of the tabs to show which is in use.
